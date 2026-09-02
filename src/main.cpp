@@ -2,8 +2,11 @@
 #include <QQmlApplicationEngine>
 #include <QWindow>
 #include <QtCore/qglobal.h>
+#include <QQmlContext>
 
 #include <LayerShellQt/window.h>
+
+#include "engine/search_engine.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -13,6 +16,9 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
+    SearchEngine searchEngine;
+
+    engine.rootContext()->setContextProperty("searchEngine", &searchEngine);
     engine.loadFromModule("SemanticLauncher", "Main");
 
     if (engine.rootObjects().isEmpty()) {
