@@ -16,6 +16,8 @@ qt_policy(SET QTP0004 NEW)
 
 qt_add_executable(semantic-launcher
     src/main.cpp
+    src/engine/search_engine.cpp
+    src/engine/search_engine.hpp
 )
 
 qt_add_qml_module(semantic-launcher
