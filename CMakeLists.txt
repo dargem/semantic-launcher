@@ -6,6 +6,13 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+include(FetchContent)
+FetchContent_Declare(usearch 
+    GIT_REPOSITORY https://github.com/unum-cloud/USearch.git
+    GIT_TAG main
+)
+FetchContent_MakeAvailable(usearch)
+
 find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
 find_package(LayerShellQt REQUIRED)
 
@@ -30,6 +37,7 @@ qt_add_qml_module(semantic-launcher
 target_link_libraries(semantic-launcher
     PRIVATE Qt6::Quick
     PRIVATE LayerShellQt::Interface
+    PRIVATE usearch::usearch
 )
 
 install(TARGETS semantic-launcher)

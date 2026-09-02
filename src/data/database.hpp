@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <cstddef>
-
+#include <usearch/index.hpp>
 #include "src/engine/result.hpp"
 
 // Manages searchable files and provides 
@@ -16,4 +16,5 @@ public:
     // Uses semantic search to get best n results, result size is <= n, sorted by strength
     std::vector<Result> get_semantic_best(std::string_view str, size_t num) const;
 private:
+      
 };

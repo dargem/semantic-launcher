@@ -2,12 +2,13 @@
 #include <QObject>
 #include <QAbstractListModel>
 #include "src/engine/result.hpp"
+#include "src/data/database.hpp"
 
 class SearchResultModel : public QAbstractListModel
 {
     Q_OBJECT
 public:
-    enum Roles { NameRole = Qt::UserRole + 1, IconRole, ExecRole };
+    enum Roles { NameRole = Qt::UserRole + 1, IconRole, ExecRole, ScoreRole};
 
     int rowCount(const QModelIndex& = QModelIndex()) const override { return m_results.size(); }
     QVariant data(const QModelIndex& index, int role) const override;
@@ -33,5 +34,6 @@ public:
 
 private:
     SearchResultModel m_model;
+    Database m_database;
     // fuzzy matcher, ANN index, desktop-entry cache, etc
 };

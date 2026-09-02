@@ -14,6 +14,8 @@ QVariant SearchResultModel::data(const QModelIndex &index, int role) const
             return QString::fromStdString(e.icon.string());
         case ExecRole:
             return QString::fromStdString(e.executable.string());
+        case ScoreRole:
+            return QString::number(e.score);
     }
 
     throw std::runtime_error("Invalid Role Requested");
@@ -24,7 +26,8 @@ QHash<int, QByteArray> SearchResultModel::roleNames() const
     return {
         { NameRole, "Name" },
         { IconRole, "Icon" },
-        { ExecRole, "execPath" }
+        { ExecRole, "execPath" },
+        { ScoreRole, "Score" }
     };
 }
 
