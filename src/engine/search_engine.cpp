@@ -1,5 +1,6 @@
 #include "src/engine/search_engine.hpp"
 #include <stdexcept>
+#include <iostream>
 
 QVariant SearchResultModel::data(const QModelIndex &index, int role) const 
 {
@@ -33,6 +34,7 @@ void SearchResultModel::setResults(const QList<Result>& results) {
 
 
 Q_INVOKABLE void SearchEngine::search(const QString& query) {
+    std::cout << query.toStdString() << std::endl;
     // The current query being searched for, change the results in response to this
 }
 

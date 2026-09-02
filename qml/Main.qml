@@ -26,13 +26,33 @@ Window {
         border.color: "#2e3440"
         border.width: 1
 
-        TextField {
+        Column {
             anchors.fill: parent
             anchors.margins: 14
-            placeholderText: "Search apps..."
-            font.pixelSize: 20
-            color: "#f4f4f5"
-            background: null
+
+            TextField {
+                id: searchField
+                width: parent.width
+                placeholderText: "Search apps..."
+                font.pixelSize: 20
+                color: "#f4f4f5"
+                background: null
+                focus: true
+
+                onTextChanged: searchEngine.search(text)
+
+                Keys.onReturnPressed: searchEngine.launch(resultsList.currentIndex)
+                Keys.onDownPressed: resultsList.incrementCurrentIndex()
+                Keys.onUpPressed: resultsList.decrementCurrentIndex()
+            }
+
+            ListView {
+                id: resultsList
+                width: parent.width
+                height: 300
+                model: searchEngine.results
+                delegate: Text { text: model.NameRole; color: "#f4f4f5" }
+            }
         }
     }
 }
