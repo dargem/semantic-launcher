@@ -15,6 +15,13 @@ FetchContent_Declare(usearch
 )
 FetchContent_MakeAvailable(usearch)
 
+FetchContent_Declare(llama_cpp
+    GIT_REPOSITORY https://github.com/ggerganov/llama.cpp
+    GIT_TAG b10830
+)
+FetchContent_MakeAvailable(llama_cpp)
+
+
 find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
 find_package(LayerShellQt REQUIRED)
 
@@ -28,6 +35,7 @@ qt_add_executable(semantic-launcher
     src/engine/search_engine.cpp
     src/engine/search_engine.hpp
     src/data/database.cpp
+    src/embedder/embedder.hpp
 )
 
 qt_add_qml_module(semantic-launcher
@@ -41,6 +49,7 @@ target_link_libraries(semantic-launcher
     PRIVATE Qt6::Quick
     PRIVATE LayerShellQt::Interface
     PRIVATE usearch::usearch
+    PRIVATE llama
 )
 
 install(TARGETS semantic-launcher)

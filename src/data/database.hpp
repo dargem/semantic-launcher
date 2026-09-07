@@ -19,5 +19,10 @@ public:
     // Uses semantic search to get best n results, result size is <= n, sorted by strength
     std::vector<Result> get_semantic_best(std::string_view query, size_t num) const;
 private:
-      unum::usearch::index_dense_t m_vector_db;
+    constexpr static size_t EMBEDDING_DIMENSIONS = 364; // Holder for now
+    // Possibly replace this with my own solution later?
+    unum::usearch::index_dense_t m_vector_db;
+
+    // Could consider not double
+    std::vector<std::array<double, EMBEDDING_DIMENSIONS>> m_embeddings;
 };
