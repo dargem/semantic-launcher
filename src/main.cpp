@@ -1,14 +1,14 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QQmlContext>
 #include <QWindow>
 #include <QtCore/qglobal.h>
-#include <QQmlContext>
 
 #include <LayerShellQt/window.h>
 
 #include "engine/search_engine.hpp"
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     qputenv("QT_QPA_PLATFORM", "wayland");
     qputenv("QT_WAYLAND_SHELL_INTEGRATION", "layer-shell");
@@ -16,30 +16,32 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    SearchEngine searchEngine;
+    SearchEngine search_engine;
 
-    engine.rootContext()->setContextProperty("searchEngine", &searchEngine);
+    engine.rootContext()->setContextProperty("searchEngine", &search_engine);
     engine.loadFromModule("SemanticLauncher", "Main");
 
-    if (engine.rootObjects().isEmpty()) {
+    if (engine.rootObjects().isEmpty())
+    {
         return -1;
     }
 
-    auto *window = qobject_cast<QWindow *>(engine.rootObjects().constFirst());
-    if (!window) {
+    auto* window = qobject_cast<QWindow*>(engine.rootObjects().constFirst());
+    if (!window)
+    {
         return -1;
     }
 
     window->setVisible(false);
 
-    auto *layerShellWindow = LayerShellQt::Window::get(window);
-    layerShellWindow->setLayer(LayerShellQt::Window::LayerOverlay);
-    layerShellWindow->setAnchors(LayerShellQt::Window::AnchorTop);
-    layerShellWindow->setMargins(QMargins(0, 100, 0, 0));
-    layerShellWindow->setExclusiveEdge(LayerShellQt::Window::AnchorTop);
-    layerShellWindow->setDesiredSize(QSize(window->width(), window->height()));
-    layerShellWindow->setExclusiveZone(0);
-    layerShellWindow->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
+    auto* layer_shell_window = LayerShellQt::Window::get(window);
+    layer_shell_window->setLayer(LayerShellQt::Window::LayerOverlay);
+    layer_shell_window->setAnchors(LayerShellQt::Window::AnchorTop);
+    layer_shell_window->setMargins(QMargins(0, 100, 0, 0));
+    layer_shell_window->setExclusiveEdge(LayerShellQt::Window::AnchorTop);
+    layer_shell_window->setDesiredSize(QSize(window->width(), window->height()));
+    layer_shell_window->setExclusiveZone(0);
+    layer_shell_window->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
 
     window->show();
     return app.exec();

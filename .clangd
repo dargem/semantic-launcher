@@ -1,2 +1,45 @@
 CompileFlags:
+  CompilationDatabase: build
   Remove: [-mno-direct-extern-access]
+  Add: [-std=c++20, -Wall, -Wextra]
+
+Diagnostics:
+  ClangTidy:
+    Add: [readability-identifier-naming]
+    CheckOptions:
+      readability-identifier-naming.ClassCase: CamelCase
+      readability-identifier-naming.StructCase: CamelCase
+      readability-identifier-naming.EnumCase: CamelCase
+      
+      # Member variables should use m_ prefix and snake_case
+      readability-identifier-naming.MemberCase: lower_case
+      readability-identifier-naming.MemberPrefix: m_
+      readability-identifier-naming.ClassMemberCase: lower_case
+      readability-identifier-naming.ClassMemberPrefix: m_
+      readability-identifier-naming.PrivateMemberCase: lower_case
+      readability-identifier-naming.PrivateMemberPrefix: m_
+      readability-identifier-naming.ProtectedMemberCase: lower_case
+      readability-identifier-naming.ProtectedMemberPrefix: m_
+      readability-identifier-naming.PublicMemberCase: lower_case
+      readability-identifier-naming.PublicMemberPrefix: m_
+
+      # Class variables (static member variables) are upper camel case
+      readability-identifier-naming.StaticVariableCase: CamelCase
+      readability-identifier-naming.ClassVariableCase: CamelCase
+
+      # Constants are screaming snake case
+      readability-identifier-naming.ConstantCase: UPPER_CASE
+      readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
+      readability-identifier-naming.GlobalConstantCase: UPPER_CASE
+      readability-identifier-naming.LocalConstantCase: UPPER_CASE
+      readability-identifier-naming.StaticConstantCase: UPPER_CASE
+      readability-identifier-naming.ClassConstantCase: UPPER_CASE
+
+      # Default is snake_case
+      readability-identifier-naming.FunctionCase: lower_case
+      readability-identifier-naming.VariableCase: lower_case
+      readability-identifier-naming.ParameterCase: lower_case
+      readability-identifier-naming.LocalVariableCase: lower_case
+      readability-identifier-naming.GlobalVariableCase: lower_case
+      readability-identifier-naming.NamespaceCase: lower_case
+

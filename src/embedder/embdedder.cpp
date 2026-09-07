@@ -1,5 +1,8 @@
 #include "src/embedder/embedder.hpp"
 
+#include <cmath>
+#include <numeric>
+
 Embedder::Embedder(const std::string& model_path)
 {
     llama_backend_init();
@@ -13,21 +16,23 @@ Embedder::Embedder(const std::string& model_path)
     m_ctx = llama_init_from_model(m_model, cparams);
 }
 
-std::vector<float> Embedder::embed(const std::string& text) {
+std::vector<float> Embedder::embed(const std::string& text)
+{
     std::vector<llama_token> tokens(text.size() + 8);
-    int n = llama_tokenize(llama_model_get_vocab(m_model), text.c_str(), text.size(),
-                            tokens.data(), tokens.size(), true, false);
+    int n = llama_tokenize(
+        llama_model_get_vocab(m_model), text.c_str(), text.size(), tokens.data(), tokens.size(), true, false);
     tokens.resize(n);
 
     llama_batch batch = llama_batch_get_one(tokens.data(), tokens.size());
     llama_encode(m_ctx, batch);
 
-    const float *emb = llama_get_embeddings_seq(m_ctx, 0);
+    const float* emb = llama_get_embeddings_seq(m_ctx, 0);
     int dim = llama_model_n_embd(m_model);
     std::vector<float> result(emb, emb + dim);
 
     // normalize for cosine similarity
     float norm = std::sqrt(std::inner_product(result.begin(), result.end(), result.begin(), 0.0f));
-    for (auto &v : result) v /= norm;
+    for (auto& v : result)
+        v /= norm;
     return result;
 }

@@ -1,9 +1,10 @@
 #pragma once
-#include <string>
 #include <filesystem>
+#include <string>
 
 /* A result of the search */
-struct Result {
+struct Result
+{
     std::string name;
     std::filesystem::path icon;
     std::filesystem::path executable;

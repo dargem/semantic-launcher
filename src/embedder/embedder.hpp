@@ -1,18 +1,17 @@
 #pragma once
 
-#include <cmath>
-#include <numeric>
+#include <llama.h>
 #include <string>
 #include <vector>
-#include <llama.h>
 
-class Embedder {
+class Embedder
+{
 public:
     explicit Embedder(const std::string&);
 
     // Embeds text based on the Embedder's model
     // Outputted floats are normalized
-    std::vector<float> embed(const std::string &text);
+    std::vector<float> embed(const std::string& text);
 
 private:
     llama_model* m_model;
