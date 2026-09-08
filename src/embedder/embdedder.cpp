@@ -16,11 +16,19 @@ Embedder::Embedder(const std::string& model_path)
     m_ctx = llama_init_from_model(m_model, cparams);
 }
 
-std::vector<float> Embedder::embed(const std::string& text)
+int Embedder::get_dimensionality() const
 {
-    std::vector<llama_token> tokens(text.size() + 8);
+    return llama_model_n_embd(m_model);
+}
+
+std::vector<float> Embedder::embed(const std::string_view text) const
+{
+    // C style string conversion as string_view isn't null terminated
+    std::string input(text);
+
+    std::vector<llama_token> tokens(input.size() + 8);
     int n = llama_tokenize(
-        llama_model_get_vocab(m_model), text.c_str(), text.size(), tokens.data(), tokens.size(), true, false);
+        llama_model_get_vocab(m_model), input.c_str(), input.size(), tokens.data(), tokens.size(), true, false);
     tokens.resize(n);
 
     llama_batch batch = llama_batch_get_one(tokens.data(), tokens.size());

@@ -27,13 +27,15 @@ Diagnostics:
       readability-identifier-naming.StaticVariableCase: CamelCase
       readability-identifier-naming.ClassVariableCase: CamelCase
 
-      # Constants are screaming snake case
-      readability-identifier-naming.ConstantCase: UPPER_CASE
-      readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
-      readability-identifier-naming.GlobalConstantCase: UPPER_CASE
-      readability-identifier-naming.LocalConstantCase: UPPER_CASE
+      # Only static const (static constants and class constants) are screaming snake case
       readability-identifier-naming.StaticConstantCase: UPPER_CASE
       readability-identifier-naming.ClassConstantCase: UPPER_CASE
+
+      # Other constants are snake_case
+      readability-identifier-naming.ConstantCase: lower_case
+      readability-identifier-naming.ConstexprVariableCase: lower_case
+      readability-identifier-naming.GlobalConstantCase: lower_case
+      readability-identifier-naming.LocalConstantCase: lower_case
 
       # Default is snake_case
       readability-identifier-naming.FunctionCase: lower_case
