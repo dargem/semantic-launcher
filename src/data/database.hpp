@@ -2,6 +2,7 @@
 
 #include "src/embedder/embedder.hpp"
 #include "src/engine/result.hpp"
+#include "src/utils/index_vector.hpp"
 #include <cassert>
 #include <cstddef>
 #include <string_view>
@@ -24,6 +25,10 @@ public:
 
 private:
     Embedder m_embedder;
+
     // Possibly replace this with my own solution later?
     unum::usearch::index_dense_t m_vector_db;
+
+    // Sparse set of results
+    siv::Vector<Result> m_results;
 };

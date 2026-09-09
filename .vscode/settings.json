@@ -1,7 +1,8 @@
 {
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/compile_commands.json",
     "cSpell.words": [
-        "Embedder"
+        "Embedder",
+        "pacman"
     ],
     "editor.formatOnSave": true
 }
