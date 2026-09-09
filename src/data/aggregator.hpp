@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/utils/index_vector.hpp"
+#include <QProcess>
 #include <src/data/result.hpp>
 #include <unordered_set>
 
@@ -17,12 +18,37 @@ struct AggregatorConfig
 void aggregate_pacman(siv::Vector<Result>& results, std::unordered_set<std::string> membership)
 {
     // pacman -Qqe get explicitly installed packages
+    QProcess get_explicit_packages;
+    get_explicit_packages.start("pacman", {"-Qqe"});
+    get_explicit_packages.waitForFinished();
+    QStringList pkg_names = QString(get_explicit_packages.readAllStandardOutput()).split('\n', Qt::SkipEmptyParts);
 
-    // pacman -Ql gets all files owned by installed package, find if any executable
+    QProcess get_info;
+    QStringList args = {"-Qi"};
+    args += pkg_names;
+    get_info.start("pacman", args);
+    get_info.waitForFinished();
+    QString info_blob = get_info.readAllStandardOutput();
 
-    // pacman -Qi <name> to get descriptions for survivors
+    // split on blank-line-separated blocks, one per package
+    const QStringList blocks = info_blob.split("\n\n", Qt::SkipEmptyParts);
+    for (const QString& block : blocks)
+    {
+        QString name, description;
+        for (const QString& line : block.split('\n'))
+        {
+            if (line.startsWith("Name"))
+                name = line.section(':', 1).trimmed();
+            else if (line.startsWith("Description"))
+                description = line.section(':', 1).trimmed();
+        }
 
-    // Do a dedup add into results
+        if (!membership.contains(name.toStdString()))
+        {
+            membership.insert(name.toStdString());
+            results.push_back(Result())
+        }
+    }
 }
 
 siv::Vector<Result>&& aggregate_results(AggregatorConfig config)

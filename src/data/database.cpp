@@ -24,7 +24,8 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
     for (size_t i{}; i < results.size(); ++i)
     {
         const int key = results[i].member.key;
-        out.push_back(m_results[key]);
+        const float score = results[i].distance;
+        out.push_back(Result{m_files[key], score});
     }
 
     return out;
