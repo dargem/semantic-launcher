@@ -3,6 +3,7 @@
 #include "src/utils/index_vector.hpp"
 #include <QFileInfo>
 #include <QProcess>
+#include <iostream>
 #include <src/data/result.hpp>
 #include <unordered_set>
 
@@ -38,10 +39,11 @@ void aggregate_pacman(siv::Vector<File>& files, std::unordered_set<std::string> 
         check_executable.start("pacman", check_args);
         check_args.pop_back();
         check_executable.waitForFinished();
-        QStringList lines = QString(get_explicit_packages.readAllStandardOutput()).split('\n', Qt::SkipEmptyParts);
+        QStringList lines = QString(check_executable.readAllStandardOutput()).split('\n', Qt::SkipEmptyParts);
 
-        for (auto path : lines)
+        for (auto line : lines)
         {
+            QString path = line.section(' ', 1); // everything after the first space
             if (path.endsWith("/"))
                 continue; // Directory
 
@@ -56,6 +58,14 @@ void aggregate_pacman(siv::Vector<File>& files, std::unordered_set<std::string> 
         }
     }
 
+    if (temp_files.size() == 0)
+    {
+        // If we don't append any args we're going to get nonsense output and thing will segfault
+        // return early as we have nothing to aggregate for this edge case, this case likely occurs due to a bug
+        // so probably log but later job
+        return;
+    }
+
     // We have files but for each need to fill in description and add them
     QProcess get_info;
     QStringList args = {"-Qi"};
@@ -63,12 +73,14 @@ void aggregate_pacman(siv::Vector<File>& files, std::unordered_set<std::string> 
     {
         args += QString::fromStdString(file.m_name);
     }
+
     get_info.start("pacman", args);
     get_info.waitForFinished();
     QString info_blob = get_info.readAllStandardOutput();
 
     // split on blank-line-separated blocks, one per package
     const QStringList blocks = info_blob.split("\n\n", Qt::SkipEmptyParts);
+
     for (auto const [i, block] : std::views::enumerate(blocks))
     {
         QString name, description;
@@ -89,7 +101,7 @@ void aggregate_pacman(siv::Vector<File>& files, std::unordered_set<std::string> 
     }
 }
 
-siv::Vector<File>&& aggregate_results(AggregatorConfig config)
+siv::Vector<File> aggregate_results(AggregatorConfig config)
 {
     siv::Vector<File> files;
 
@@ -100,4 +112,6 @@ siv::Vector<File>&& aggregate_results(AggregatorConfig config)
     {
         aggregate_pacman(files, membership);
     }
+
+    return files; // Not guaranteed but copy should be elided (at least I hope haha)
 }
