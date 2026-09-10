@@ -1,6 +1,6 @@
 #pragma once
 #include "src/data/database.hpp"
-#include "src/engine/result.hpp"
+#include "src/data/result.hpp"
 #include <QAbstractListModel>
 #include <QObject>
 

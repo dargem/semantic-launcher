@@ -1,17 +1,19 @@
 #pragma once
 #include <filesystem>
+#include <optional>
 #include <string>
 
 struct File
 {
-    std::string name;
-    std::filesystem::path executable;
-    std::filesystem::path icon;
+    std::string m_name;
+    std::filesystem::path m_executable;
+    std::string m_description; // Short description of the file
+    std::optional<std::filesystem::path> m_icon{};
 };
 
 /* A result of the search */
 struct Result
 {
-    File file;
-    float score; // Score of a result: [0, 1] 1 is ideal
+    File m_file;
+    float m_score; // Score of a result: [0, 1] 1 is ideal
 };

@@ -15,7 +15,7 @@ QVariant SearchResultModel::data(const QModelIndex& index, int role) const
         case ExecRole:
             return QString::fromStdString(e.executable.string());
         case ScoreRole:
-            return QString::number(e.score);
+            return QString::number(e.m_score);
     }
 
     throw std::runtime_error("Invalid Role Requested");
