@@ -1,5 +1,5 @@
 #include "src/data/database.hpp"
-#include <string>
+#include <iostream>
 
 using unum::usearch::index_dense_t;
 using unum::usearch::metric_kind_t;
@@ -18,6 +18,7 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
     auto embedding = m_embedder.embed(query);
     auto results = m_vector_db.search(embedding.data(), num);
 
+    std::cout << "Got results" << std::endl;
     std::vector<Result> out;
     out.reserve(results.size());
 

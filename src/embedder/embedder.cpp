@@ -1,7 +1,9 @@
 #include "src/embedder/embedder.hpp"
 
 #include <cmath>
+#include <iostream>
 #include <numeric>
+#include <stdfloat>
 
 Embedder::Embedder(const std::string& model_path)
 {
@@ -12,6 +14,7 @@ Embedder::Embedder(const std::string& model_path)
 
     llama_context_params cparams = llama_context_default_params();
     cparams.embeddings = true;
+    cparams.pooling_type = LLAMA_POOLING_TYPE_CLS;
     cparams.n_ubatch = cparams.n_batch = 512;
     m_ctx = llama_init_from_model(m_model, cparams);
 }
@@ -21,7 +24,7 @@ int Embedder::get_dimensionality() const
     return llama_model_n_embd(m_model);
 }
 
-std::vector<float> Embedder::embed(const std::string_view text) const
+std::vector<float> Embedder::embed(std::string_view text) const
 {
     // C style string conversion as string_view isn't null terminated
     std::string input(text);
@@ -30,12 +33,14 @@ std::vector<float> Embedder::embed(const std::string_view text) const
     int n = llama_tokenize(
         llama_model_get_vocab(m_model), input.c_str(), input.size(), tokens.data(), tokens.size(), true, false);
     tokens.resize(n);
-
     llama_batch batch = llama_batch_get_one(tokens.data(), tokens.size());
     llama_encode(m_ctx, batch);
 
     const float* emb = llama_get_embeddings_seq(m_ctx, 0);
+
     int dim = llama_model_n_embd(m_model);
+
+    // segfaults here
     std::vector<float> result(emb, emb + dim);
 
     // normalize for cosine similarity
