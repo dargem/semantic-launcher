@@ -37,6 +37,8 @@ qt_add_executable(semantic-launcher
     src/embedder/embedder.cpp
 )
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/model.gguf ${CMAKE_CURRENT_BINARY_DIR}/model.gguf COPYONLY)
+
 qt_add_qml_module(semantic-launcher
     URI SemanticLauncher
     VERSION 1.0
