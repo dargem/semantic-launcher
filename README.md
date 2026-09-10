@@ -1,2 +1,3 @@
 # semantic-launcher
-A hyprland app launcher using a semantic search
+
+A qt app launcher for Arch using a semantic search

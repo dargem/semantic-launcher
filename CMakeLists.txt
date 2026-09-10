@@ -33,9 +33,8 @@ qt_policy(SET QTP0004 NEW)
 qt_add_executable(semantic-launcher
     src/main.cpp
     src/engine/search_engine.cpp
-    src/engine/search_engine.hpp
     src/data/database.cpp
-    src/embedder/embedder.hpp
+    src/embedder/embedder.cpp
 )
 
 qt_add_qml_module(semantic-launcher

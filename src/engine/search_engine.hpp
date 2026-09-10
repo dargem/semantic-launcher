@@ -34,7 +34,7 @@ class SearchEngine : public QObject
     Q_OBJECT
     Q_PROPERTY(SearchResultModel* results READ results CONSTANT)
 public:
-    explicit SearchEngine(QObject* parent = nullptr) {};
+    explicit SearchEngine(QObject* parent = nullptr) : m_model(), m_database(Embedder("model.gguf")) {};
 
     Q_INVOKABLE void search(const QString& query); // gets called from QML on every keystroke
     Q_INVOKABLE void launch(int index);            // gets called on Enter / click

@@ -9,11 +9,11 @@ QVariant SearchResultModel::data(const QModelIndex& index, int role) const
     switch (role)
     {
         case NameRole:
-            return QString::fromStdString(e.name);
+            return QString::fromStdString(e.m_file.m_name);
         case IconRole:
-            return QString::fromStdString(e.icon.string());
+            return QString::fromStdString(e.m_file.m_icon->string());
         case ExecRole:
-            return QString::fromStdString(e.executable.string());
+            return QString::fromStdString(e.m_file.m_executable.string());
         case ScoreRole:
             return QString::number(e.m_score);
     }

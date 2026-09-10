@@ -3,7 +3,6 @@
 #include "src/utils/index_vector.hpp"
 #include <QFileInfo>
 #include <QProcess>
-#include <ranges>
 #include <src/data/result.hpp>
 #include <unordered_set>
 
