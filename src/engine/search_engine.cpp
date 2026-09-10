@@ -33,12 +33,14 @@ void SearchResultModel::setResults(const QList<Result>& results)
 
 Q_INVOKABLE void SearchEngine::search(const QString& query)
 {
-    std::cout << query.toStdString() << std::endl;
+    std::cout << query.toStdString() << " results:" << std::endl;
     auto res = m_database.get_semantic_best(query.toStdString(), 5);
     for (auto r : res)
     {
-        std::cout << "results" << '\n' << r.m_file.m_name << '\n';
+        std::cout << r.m_file.m_name << '\n';
     }
+
+    std::cout << '\n';
 }
 
 // Launching index x

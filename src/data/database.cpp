@@ -12,6 +12,17 @@ Database::Database(Embedder embedder)
           metric_punned_t(embedder.get_dimensionality(), metric_kind_t::l2sq_k, scalar_kind_t::f32_k)))
 {
     m_files = aggregate_results(AggregatorConfig{true, false, false, false, false});
+    m_vector_db.reserve(m_files.size());
+    for (size_t i{}; i < m_files.size(); ++i)
+    {
+        // We want to use our stable indexes as keys for our embedding db
+        siv::ID key = m_files.createHandleFromData(i).getID();
+        File& file = m_files[key];
+
+        // Consider also embedding name in future
+        std::vector<float> embeddings = embedder.embed(file.m_description);
+        m_vector_db.add(key, embeddings.data());
+    }
 };
 
 std::vector<Result> Database::get_semantic_best(std::string_view query, size_t num) const
