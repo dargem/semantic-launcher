@@ -35,13 +35,47 @@ QHash<int, QByteArray> SearchResultModel::roleNames() const
 
 void SearchResultModel::set_results(const QList<Result>& results)
 {
-    beginResetModel();
-    m_results = results;
-    endResetModel();
+    size_t old_size = m_results.size();
+    size_t new_size = results.size();
+
+    // Trim excess if new is smaller
+    if (new_size < old_size)
+    {
+        beginRemoveRows(QModelIndex(), new_size, old_size - 1);
+        m_results = m_results.mid(0, new_size);
+        endRemoveRows();
+    }
+
+    size_t common_size = std::min(old_size, new_size);
+    if (common_size > 0)
+    {
+        for (size_t i = 0; i < common_size; ++i)
+        {
+            m_results[i] = results[i];
+        }
+        emit dataChanged(index(0), index(common_size - 1));
+    }
+
+    // 3. Insert new rows if the new list is larger
+    if (new_size > old_size)
+    {
+        beginInsertRows(QModelIndex(), old_size, new_size - 1);
+        for (size_t i = old_size; i < new_size; ++i)
+        {
+            m_results.append(results[i]);
+        }
+        endInsertRows();
+    }
 }
 
 Q_INVOKABLE void SearchEngine::search(const QString& query)
 {
+    if (query.size() == 0)
+    {
+        m_model.set_results(QList<Result>());
+        return;
+    }
+
     auto results = m_database.get_match_best(query.toStdString(), 3, 0.3);
     results.append_range(m_database.get_semantic_best(query.toStdString(), 3, 0.5));
 
