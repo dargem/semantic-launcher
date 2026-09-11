@@ -13,7 +13,8 @@ public:
         NameRole = Qt::UserRole + 1,
         IconRole,
         ExecRole,
-        ScoreRole
+        ScoreRole,
+        DescriptionRole
     };
 
     int rowCount(const QModelIndex& = QModelIndex()) const override

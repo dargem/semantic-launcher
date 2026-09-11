@@ -39,12 +39,11 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
     for (size_t i{}; i < results.size(); ++i)
     {
         const int key = results[i].member.key;
-        const float score = results[i].distance;
+        const float score = 1.0f / (1.0f + results[i].distance);
         out.push_back(Result{m_files[key], score});
     }
 
-    std::sort(out.begin(), out.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; });
-    std::reverse(out.begin(), out.end()); // Descending order
+    std::sort(out.begin(), out.end(), [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
 
     return out;
 }
@@ -59,7 +58,7 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n) c
 
     for (auto option : m_files)
     {
-        double score = scorer.similarity(option.m_name); // Consider using description later
+        double score = scorer.similarity(option.m_name) / 100.0; // Normalize RapidFuzz's 0-100 score to 0-1
 
         if (best_n.size() < n)
         {
@@ -78,7 +77,6 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n) c
         }
     }
 
-    std::sort(best_n.begin(), best_n.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; });
-    std::reverse(best_n.begin(), best_n.end()); // Descending order
+    std::sort(best_n.begin(), best_n.end(), [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
     return best_n;
 }

@@ -59,22 +59,96 @@ Window {
                 currentIndex: 0
                 implicitHeight: contentHeight
                 height: contentHeight
+                spacing: 8
 
                 delegate: Rectangle {
                     width: ListView.view.width
-                    height: 44
-                    radius: 10
-                    color: ListView.isCurrentItem ? "#2e3440" : "transparent"
+                    height: 64
+                    radius: 14
+                    border.width: 1
+                    border.color: ListView.isCurrentItem ? "#5e81ac" : (hoverArea.containsMouse ? "#4c566a" : "#2e3440")
+                    color: ListView.isCurrentItem ? "#263040" : (hoverArea.containsMouse ? "#212733" : "transparent")
 
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
+                    MouseArea {
+                        id: hoverArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                    }
+
+                    Column {
                         anchors.left: parent.left
                         anchors.leftMargin: 12
-                        width: parent.width - 24
-                        text: Name
-                        color: "#f4f4f5"
-                        font.pixelSize: 18
-                        elide: Text.ElideRight
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: badgeColumn.left
+                        anchors.rightMargin: 12
+                        spacing: 4
+
+                        Text {
+                            width: parent.width
+                            text: Name
+                            color: "#f4f4f5"
+                            font.pixelSize: 18
+                            font.weight: Font.Medium
+                            elide: Text.ElideRight
+                        }
+
+                        Text {
+                            width: parent.width
+                            text: Description.length > 0 ? Description : "No description available"
+                            color: "#9ca3af"
+                            font.pixelSize: 12
+                            elide: Text.ElideRight
+                        }
+                    }
+
+                    Column {
+                        id: badgeColumn
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 6
+
+                        Rectangle {
+                            width: 58
+                            height: 26
+                            radius: 13
+                            color: Number(Score) >= 0.75 ? "#2f855a" : (Number(Score) >= 0.5 ? "#805ad5" : "#4c566a")
+                            border.color: Qt.lighter(color, 1.2)
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: Math.round(Number(Score) * 100) + "%"
+                                color: "#f8fafc"
+                                font.pixelSize: 12
+                                font.weight: Font.Bold
+                            }
+                        }
+
+                        Rectangle {
+                            width: 22
+                            height: 22
+                            radius: 11
+                            color: hoverBubble.containsMouse ? "#5e81ac" : "#343a46"
+                            border.color: "#677185"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "i"
+                                color: "#f4f4f5"
+                                font.pixelSize: 12
+                                font.bold: true
+                            }
+
+                            MouseArea {
+                                id: hoverBubble
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                ToolTip.visible: containsMouse && Description.length > 0
+                                ToolTip.text: Description
+                                ToolTip.delay: 250
+                            }
+                        }
                     }
                 }
             }

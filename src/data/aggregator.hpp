@@ -88,7 +88,7 @@ void aggregate_pacman(siv::Vector<File>& files, std::unordered_set<std::string> 
         {
             if (line.startsWith("Description"))
             {
-                temp_files[i].m_description = line.toStdString();
+                temp_files[i].m_description = line.section(": ", 1).toStdString();
 
                 if (!membership.contains(temp_files[i].m_name))
                 {
