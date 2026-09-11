@@ -29,7 +29,9 @@ Window {
 
         Column {
             id: contentColumn
-            anchors.fill: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
             anchors.margins: 14
             spacing: 12
 

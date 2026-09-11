@@ -43,10 +43,8 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
         out.push_back(Result{m_files[key], score});
     }
 
-    // for (auto o : out)
-    // {
-    //     std::cout << o.m_file.m_name << '\n';
-    // }
+    std::sort(out.begin(), out.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; });
+    std::reverse(out.begin(), out.end()); // Descending order
 
     return out;
 }
@@ -81,6 +79,6 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n) c
     }
 
     std::sort(best_n.begin(), best_n.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; });
-    std::reverse(best_n.begin(), best_n.end());
+    std::reverse(best_n.begin(), best_n.end()); // Descending order
     return best_n;
 }

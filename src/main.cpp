@@ -39,7 +39,15 @@ int main(int argc, char* argv[])
     layer_shell_window->setAnchors(LayerShellQt::Window::AnchorTop);
     layer_shell_window->setMargins(QMargins(0, 100, 0, 0));
     layer_shell_window->setExclusiveEdge(LayerShellQt::Window::AnchorTop);
-    layer_shell_window->setDesiredSize(QSize(window->width(), window->height()));
+    layer_shell_window->setDesiredSize(window->size());
+    QObject::connect(window,
+                     &QWindow::widthChanged,
+                     window,
+                     [window, layer_shell_window]() { layer_shell_window->setDesiredSize(window->size()); });
+    QObject::connect(window,
+                     &QWindow::heightChanged,
+                     window,
+                     [window, layer_shell_window]() { layer_shell_window->setDesiredSize(window->size()); });
     layer_shell_window->setExclusiveZone(0);
     layer_shell_window->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
 
