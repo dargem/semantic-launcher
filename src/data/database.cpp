@@ -58,7 +58,6 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n) c
 
     std::vector<Result> best_n;
     best_n.reserve(n); // May not use n in case < n results to match
-    double worst = std::numeric_limits<double>::max();
 
     for (auto option : m_files)
     {
@@ -67,26 +66,21 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n) c
         if (best_n.size() < n)
         {
             best_n.push_back(Result(option, score));
-            worst = std::min(worst, score);
             continue;
         }
 
-        // Need to check if its better to replace
-        if (score < worst)
+        auto worst_it =
+            std::min_element(best_n.begin(), best_n.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; });
+
+        if (worst_it->m_score < score)
         {
-            continue;
+            // Do a replacement
+            worst_it->m_score = score;
+            worst_it->m_file = option;
         }
-
-        // Need to do a replacement, won't be null since we know worst is in there
-        auto replaced =
-            std::find_if(best_n.begin(), best_n.end(), [worst](Result& opt) { return opt.m_score == worst; });
-
-        replaced->m_file = option;
-        replaced->m_score = score;
-        worst =
-            std::min_element(best_n.begin(), best_n.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; })
-                ->m_score;
     }
 
+    std::sort(best_n.begin(), best_n.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; });
+    std::reverse(best_n.begin(), best_n.end());
     return best_n;
 }
