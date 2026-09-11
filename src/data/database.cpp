@@ -28,7 +28,7 @@ Database::Database(Embedder embedder)
     }
 };
 
-std::vector<Result> Database::get_semantic_best(std::string_view query, size_t num) const
+std::vector<Result> Database::get_semantic_best(std::string_view query, size_t num, double cut_off) const
 {
     auto embedding = m_embedder.embed(query);
     auto results = m_vector_db.search(embedding.data(), num);
@@ -40,7 +40,10 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
     {
         const int key = results[i].member.key;
         const float score = 1.0f / (1.0f + results[i].distance);
-        out.push_back(Result{m_files[key], score});
+        if (score >= cut_off)
+        {
+            out.push_back(Result{m_files[key], score});
+        }
     }
 
     std::sort(out.begin(), out.end(), [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
@@ -49,7 +52,7 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
 }
 
 // Use a fuzzy string match
-std::vector<Result> Database::get_match_best(std::string_view query, size_t n) const
+std::vector<Result> Database::get_match_best(std::string_view query, size_t n, double cut_off) const
 {
     rapidfuzz::fuzz::CachedRatio<char> scorer(query);
 
@@ -59,6 +62,9 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n) c
     for (auto option : m_files)
     {
         double score = scorer.similarity(option.m_name) / 100.0; // Normalize RapidFuzz's 0-100 score to 0-1
+
+        if (score < cut_off)
+            continue;
 
         if (best_n.size() < n)
         {

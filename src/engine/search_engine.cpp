@@ -42,9 +42,10 @@ void SearchResultModel::set_results(const QList<Result>& results)
 
 Q_INVOKABLE void SearchEngine::search(const QString& query)
 {
-    auto results = m_database.get_match_best(query.toStdString(), 3);
-    results.append_range(m_database.get_semantic_best(query.toStdString(), 3));
+    auto results = m_database.get_match_best(query.toStdString(), 3, 0.3);
+    results.append_range(m_database.get_semantic_best(query.toStdString(), 3, 0.5));
 
+    // need to dedup results
     std::unordered_map<std::string, Result> merged_results;
     merged_results.reserve(results.size());
 
@@ -72,7 +73,7 @@ Q_INVOKABLE void SearchEngine::search(const QString& query)
     m_model.set_results(QList<Result>(ranked_results.begin(), ranked_results.end()));
 }
 
-// Launching index x
+// Launching result of that index
 Q_INVOKABLE void SearchEngine::launch(int index)
 {
     // For now just pass but later fork and launch app

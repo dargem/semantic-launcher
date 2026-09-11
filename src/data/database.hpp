@@ -18,10 +18,12 @@ public:
     Database(Embedder embedder);
 
     // Uses exact / fuzzy match to get best n results, result size is <= n, sorted by strength
-    std::vector<Result> get_match_best(std::string_view query, size_t n) const;
+    // Strength is [0, 1] and no result will be < than cutoff
+    std::vector<Result> get_match_best(std::string_view query, size_t n, double cut_off = 0.0) const;
 
     // Uses semantic search to get best n results, result size is <= n, sorted by strength
-    std::vector<Result> get_semantic_best(std::string_view query, size_t n) const;
+    // Strength is [0, 1] and no results will be < than cutoff
+    std::vector<Result> get_semantic_best(std::string_view query, size_t n, double cut_off = 0.0) const;
 
 private:
     Embedder m_embedder;

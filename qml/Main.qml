@@ -4,7 +4,7 @@ import QtQuick.Window
 
 Window {
     id: root
-    width: 960
+    width: 700
     visible: false
     color: "transparent"
     title: "semantic-launcher"
@@ -81,15 +81,14 @@ Window {
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: badgeColumn.left
                         anchors.rightMargin: 12
-                        spacing: 4
+                        spacing: 8
 
                         Text {
-                            width: parent.width
+                            id: nameText
                             text: Name
                             color: "#f4f4f5"
                             font.pixelSize: 18
                             font.weight: Font.Medium
-                            elide: Text.ElideRight
                         }
 
                         Text {
@@ -121,32 +120,6 @@ Window {
                                 color: "#f8fafc"
                                 font.pixelSize: 12
                                 font.weight: Font.Bold
-                            }
-                        }
-
-                        Rectangle {
-                            width: 22
-                            height: 22
-                            radius: 11
-                            color: hoverBubble.containsMouse ? "#5e81ac" : "#343a46"
-                            border.color: "#677185"
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: "i"
-                                color: "#f4f4f5"
-                                font.pixelSize: 12
-                                font.bold: true
-                            }
-
-                            MouseArea {
-                                id: hoverBubble
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                ToolTip.visible: containsMouse && Description.length > 0
-                                ToolTip.text: Description
-                                ToolTip.delay: 250
                             }
                         }
                     }
