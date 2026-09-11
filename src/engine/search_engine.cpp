@@ -46,6 +46,7 @@ void SearchResultModel::set_results(const QList<Result>& results)
         endRemoveRows();
     }
 
+    // Fill in with new data
     size_t common_size = std::min(old_size, new_size);
     if (common_size > 0)
     {
@@ -56,7 +57,7 @@ void SearchResultModel::set_results(const QList<Result>& results)
         emit dataChanged(index(0), index(common_size - 1));
     }
 
-    // 3. Insert new rows if the new list is larger
+    // Insert new rows if the new list is larger
     if (new_size > old_size)
     {
         beginInsertRows(QModelIndex(), old_size, new_size - 1);

@@ -12,6 +12,13 @@ Window {
 
     height: contentColumn.implicitHeight + 28
 
+    Behavior on height {
+        NumberAnimation {
+            duration: 150
+            easing.type: Easing.OutCubic
+        }
+    }
+
     x: Math.round((Screen.width - width) / 2)
     y: 24
 
@@ -26,6 +33,7 @@ Window {
         color: "#1a1d24"
         border.color: "#2e3440"
         border.width: 1
+        clip: true
 
         Column {
             id: contentColumn
