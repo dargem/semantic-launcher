@@ -111,7 +111,31 @@ Window {
                             width: 58
                             height: 26
                             radius: 13
-                            color: Number(Score) >= 0.75 ? "#2f855a" : (Number(Score) >= 0.5 ? "#805ad5" : "#4c566a")
+                            color: {
+                                var score = Math.max(0, Math.min(1, Number(Score)))
+
+                                if (score < 0.5) {
+                                    // Red → Yellow
+                                    var t = score / 0.5
+
+                                    return Qt.rgba(
+                                        1.0,
+                                        t,
+                                        0.0,
+                                        0.4 // lower alpha so not blinding with white text
+                                    )
+                                } else {
+                                    // Yellow → Green
+                                    var t = (score - 0.5) / 0.5
+
+                                    return Qt.rgba(
+                                        1.0 - t,
+                                        1.0,
+                                        0.0,
+                                        0.4
+                                    )
+                                }
+                            }
                             border.color: Qt.lighter(color, 1.2)
 
                             Text {
