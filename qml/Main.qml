@@ -5,11 +5,12 @@ import QtQuick.Window
 Window {
     id: root
     width: 960
-    height: 72
     visible: false
     color: "transparent"
     title: "semantic-launcher"
     flags: Qt.FramelessWindowHint
+
+    height: contentColumn.implicitHeight + 28
 
     x: Math.round((Screen.width - width) / 2)
     y: 24
@@ -27,8 +28,10 @@ Window {
         border.width: 1
 
         Column {
+            id: contentColumn
             anchors.fill: parent
             anchors.margins: 14
+            spacing: 12
 
             TextField {
                 id: searchField
@@ -49,9 +52,29 @@ Window {
             ListView {
                 id: resultsList
                 width: parent.width
-                height: 300
                 model: searchEngine.results
-                delegate: Text { text: model.NameRole; color: "#f4f4f5" }
+                clip: true
+                currentIndex: 0
+                implicitHeight: contentHeight
+                height: contentHeight
+
+                delegate: Rectangle {
+                    width: ListView.view.width
+                    height: 44
+                    radius: 10
+                    color: ListView.isCurrentItem ? "#2e3440" : "transparent"
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.leftMargin: 12
+                        width: parent.width - 24
+                        text: Name
+                        color: "#f4f4f5"
+                        font.pixelSize: 18
+                        elide: Text.ElideRight
+                    }
+                }
             }
         }
     }

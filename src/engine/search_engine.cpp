@@ -26,21 +26,18 @@ QHash<int, QByteArray> SearchResultModel::roleNames() const
     return {{NameRole, "Name"}, {IconRole, "Icon"}, {ExecRole, "execPath"}, {ScoreRole, "Score"}};
 }
 
-void SearchResultModel::setResults(const QList<Result>& results)
+void SearchResultModel::set_results(const QList<Result>& results)
 {
+    beginResetModel();
     m_results = results;
+    endResetModel();
 }
 
 Q_INVOKABLE void SearchEngine::search(const QString& query)
 {
-    std::cout << query.toStdString() << " results:" << std::endl;
-    auto res = m_database.get_semantic_best(query.toStdString(), 5);
-    for (auto r : res)
-    {
-        std::cout << r.m_file.m_name << '\n';
-    }
-
-    std::cout << '\n';
+    auto results = m_database.get_match_best(query.toStdString(), 3);
+    results.append_range(m_database.get_semantic_best(query.toStdString(), 3));
+    m_model.set_results(QList<Result>(results.begin(), results.end()));
 }
 
 // Launching index x

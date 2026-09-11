@@ -21,6 +21,10 @@ FetchContent_Declare(llama_cpp
 )
 FetchContent_MakeAvailable(llama_cpp)
 
+FetchContent_Declare(rapidfuzz
+  GIT_REPOSITORY https://github.com/rapidfuzz/rapidfuzz-cpp.git
+  GIT_TAG main)
+FetchContent_MakeAvailable(rapidfuzz)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
 find_package(LayerShellQt REQUIRED)
@@ -51,6 +55,7 @@ target_link_libraries(semantic-launcher
     PRIVATE LayerShellQt::Interface
     PRIVATE usearch::usearch
     PRIVATE llama
+    PRIVATE rapidfuzz::rapidfuzz
 )
 
 install(TARGETS semantic-launcher)

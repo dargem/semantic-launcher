@@ -23,7 +23,7 @@ public:
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
-    void setResults(const QList<Result>& results);
+    void set_results(const QList<Result>& results);
 
 private:
     QList<Result> m_results;

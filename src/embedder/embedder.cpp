@@ -1,7 +1,6 @@
 #include "src/embedder/embedder.hpp"
 
 #include <cmath>
-#include <iostream>
 #include <numeric>
 #include <stdfloat>
 
@@ -40,7 +39,6 @@ std::vector<float> Embedder::embed(std::string_view text) const
 
     int dim = llama_model_n_embd(m_model);
 
-    // segfaults here
     std::vector<float> result(emb, emb + dim);
 
     // normalize for cosine similarity

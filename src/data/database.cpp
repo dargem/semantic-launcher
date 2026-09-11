@@ -1,5 +1,8 @@
-#include "src/data/database.hpp"
+#include <rapidfuzz/rapidfuzz_all.hpp>
+
 #include "src/data/aggregator.hpp"
+#include "src/data/database.hpp"
+#include <limits>
 
 using unum::usearch::index_dense_t;
 using unum::usearch::metric_kind_t;
@@ -46,4 +49,44 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
     // }
 
     return out;
+}
+
+// Use a fuzzy string match
+std::vector<Result> Database::get_match_best(std::string_view query, size_t n) const
+{
+    rapidfuzz::fuzz::CachedRatio<char> scorer(query);
+
+    std::vector<Result> best_n;
+    best_n.reserve(n); // May not use n in case < n results to match
+    double worst = std::numeric_limits<double>::max();
+
+    for (auto option : m_files)
+    {
+        double score = scorer.similarity(option.m_name); // Consider using description later
+
+        if (best_n.size() < n)
+        {
+            best_n.push_back(Result(option, score));
+            worst = std::min(worst, score);
+            continue;
+        }
+
+        // Need to check if its better to replace
+        if (score < worst)
+        {
+            continue;
+        }
+
+        // Need to do a replacement, won't be null since we know worst is in there
+        auto replaced =
+            std::find_if(best_n.begin(), best_n.end(), [worst](Result& opt) { return opt.m_score == worst; });
+
+        replaced->m_file = option;
+        replaced->m_score = score;
+        worst =
+            std::min_element(best_n.begin(), best_n.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; })
+                ->m_score;
+    }
+
+    return best_n;
 }

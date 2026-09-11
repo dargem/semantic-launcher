@@ -21,7 +21,7 @@ public:
     std::vector<Result> get_match_best(std::string_view query, size_t n) const;
 
     // Uses semantic search to get best n results, result size is <= n, sorted by strength
-    std::vector<Result> get_semantic_best(std::string_view query, size_t num) const;
+    std::vector<Result> get_semantic_best(std::string_view query, size_t n) const;
 
 private:
     Embedder m_embedder;
