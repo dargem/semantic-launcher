@@ -30,6 +30,7 @@ Diagnostics:
       # Only static const (static constants and class constants) are screaming snake case
       readability-identifier-naming.StaticConstantCase: UPPER_CASE
       readability-identifier-naming.ClassConstantCase: UPPER_CASE
+      readability-identifier-naming.EnumConstantCase: CamelCase
 
       # Other constants are snake_case
       readability-identifier-naming.ConstantCase: lower_case

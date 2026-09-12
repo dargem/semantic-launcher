@@ -26,6 +26,15 @@ public:
 
     void set_results(const QList<Result>& results);
 
+    Result get_result(int index) const
+    {
+        if (index >= 0 && index < m_results.size())
+        {
+            return m_results[index];
+        }
+        return Result{};
+    }
+
 private:
     QList<Result> m_results;
 };

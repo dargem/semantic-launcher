@@ -1,6 +1,12 @@
 #include "src/engine/search_engine.hpp"
+#include <QProcess>
+#include <QString>
+#include <fcntl.h>
 #include <iostream>
 #include <stdexcept>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 #include <unordered_map>
 
 QVariant SearchResultModel::data(const QModelIndex& index, int role) const
@@ -77,8 +83,8 @@ Q_INVOKABLE void SearchEngine::search(const QString& query)
         return;
     }
 
-    auto results = m_database.get_match_best(query.toStdString(), 3, 0.3);
-    results.append_range(m_database.get_semantic_best(query.toStdString(), 3, 0.5));
+    auto results = m_database.get_match_best(query.toStdString(), 3, 0.4);
+    results.append_range(m_database.get_semantic_best(query.toStdString(), 3, 0.3));
 
     // need to dedup results
     std::unordered_map<std::string, Result> merged_results;
@@ -111,5 +117,127 @@ Q_INVOKABLE void SearchEngine::search(const QString& query)
 // Launching result of that index
 Q_INVOKABLE void SearchEngine::launch(int index)
 {
-    // For now just pass but later fork and launch app
+    Result result = m_model.get_result(index);
+    if (result.m_file.m_executable.empty())
+    {
+        return;
+    }
+
+    std::filesystem::path executable = result.m_file.m_executable;
+
+    // Helper to check if it's a TUI app
+    auto is_tui_app = [](const std::filesystem::path& path) -> bool
+    {
+        QProcess ldd;
+        ldd.start("ldd", {QString::fromStdString(path.string())});
+        if (!ldd.waitForFinished(1000))
+        {
+            return false;
+        }
+
+        QString output = ldd.readAllStandardOutput();
+        if (output.contains("not a dynamic executable"))
+        {
+            // It's a script. Most scripts in /usr/bin are CLI/TUI tools unless they launch a GUI.
+            return true;
+        }
+
+        // List of GUI libraries. If the binary links to any of these, it's a GUI app.
+        static const QStringList gui_libs = {"libX11.so",
+                                             "libwayland-client.so",
+                                             "libxcb.so",
+                                             "libgtk-3.so",
+                                             "libgtk-4.so",
+                                             "libgdk-3.so",
+                                             "libgdk-4.so",
+                                             "libQt6Gui.so",
+                                             "libQt5Gui.so",
+                                             "libQt6Widgets.so",
+                                             "libQt5Widgets.so",
+                                             "libSDL2.so",
+                                             "libSDL-1.2.so",
+                                             "libglfw.so",
+                                             "libglut.so"};
+
+        for (const auto& lib : gui_libs)
+        {
+            if (output.contains(lib))
+            {
+                return false; // It's a GUI app
+            }
+        }
+
+        return true; // If it doesn't link to GUI libs, assume TUI/CLI
+    };
+
+    // Helper to find an available terminal emulator
+    auto find_terminal_emulator = []() -> std::string
+    {
+        static const std::vector<std::string> terminals = {
+            "kitty", "alacritty", "wezterm", "konsole", "gnome-terminal", "xfce4-terminal", "foot", "xterm"};
+
+        for (const auto& term : terminals)
+        {
+            QProcess which;
+            which.start("which", {QString::fromStdString(term)});
+            if (which.waitForFinished() && which.exitCode() == 0)
+            {
+                return term;
+            }
+        }
+        return "";
+    };
+
+    bool is_tui = is_tui_app(executable);
+
+    pid_t pid = fork();
+    if (pid == 0)
+    {
+        // Double fork to prevent zombie processes
+        pid_t child_pid = fork();
+        if (child_pid == 0)
+        {
+            // Grandchild process
+            // Redirect stdout/stderr to /dev/null to avoid cluttering our launcher's output
+            int dev_null = open("/dev/null", O_WRONLY);
+            if (dev_null >= 0)
+            {
+                dup2(dev_null, STDOUT_FILENO);
+                dup2(dev_null, STDERR_FILENO);
+                close(dev_null);
+            }
+
+            if (is_tui)
+            {
+                std::string term = find_terminal_emulator();
+                if (!term.empty())
+                {
+                    std::string exec_str = executable.string();
+                    if (term == "gnome-terminal")
+                    {
+                        execlp(term.c_str(), term.c_str(), "--", exec_str.c_str(), nullptr);
+                    }
+                    else if (term == "wezterm")
+                    {
+                        execlp(term.c_str(), term.c_str(), "start", "--", exec_str.c_str(), nullptr);
+                    }
+                    else
+                    {
+                        execlp(term.c_str(), term.c_str(), "-e", exec_str.c_str(), nullptr);
+                    }
+                }
+            }
+
+            // If not TUI, or if terminal launch failed, run directly
+            execl(executable.c_str(), executable.c_str(), nullptr);
+            execlp(executable.c_str(), executable.c_str(), nullptr);
+
+            std::cerr << "Failed to execute: " << executable << std::endl;
+            _exit(1);
+        }
+        _exit(0);
+    }
+
+    int status;
+    waitpid(pid, &status, 0);
 }
