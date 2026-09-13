@@ -1,11 +1,16 @@
 #pragma once
 
 #include "src/data/sources/aggregator.hpp"
+#include <filesystem>
 
-// Aggregates from pacman
-class Pacman : public IAggregator
+// Aggregates from .desktop files
+class Desktop : public IAggregator
 {
+public:
+    Desktop();
     bool check_applicable() const override;
-
     void aggregate(siv::Vector<File>& files, std::unordered_set<std::string> membership) const override;
+
+private:
+    std::optional<std::filesystem::path> m_desktop_folder; // Path to .desktop folder
 };
