@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cstddef>
 #include <string_view>
+#include <unordered_map>
 #include <usearch/index.hpp>
 #include <usearch/index_dense.hpp>
 #include <vector>
@@ -33,4 +34,7 @@ private:
 
     // Sparse set of files
     siv::Vector<File> m_files;
+
+    // Reverse mapping name -> siv::ID
+    std::unordered_map<std::string, siv::ID> m_file_membership;
 };

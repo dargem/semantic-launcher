@@ -15,11 +15,11 @@
 namespace configs
 {
 
-inline auto const aggregators = []
+inline auto const AGGREGATORS = []
 {
     std::vector<std::unique_ptr<IAggregate>> agg;
-    agg.push_back(std::unique_ptr<Pacman>());
-    agg.push_back(std::unique_ptr<Desktop>());
+    agg.push_back(std::make_unique<Pacman>());
+    agg.push_back(std::make_unique<Desktop>());
     return agg;
 }();
 

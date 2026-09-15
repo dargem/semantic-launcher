@@ -10,6 +10,7 @@ public:
     Desktop();
     bool check_applicable() const override;
     void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const override;
+    ~Desktop() override = default;
 
 private:
     std::optional<std::filesystem::path> m_desktop_folder; // Path to .desktop folder

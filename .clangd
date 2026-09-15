@@ -32,10 +32,10 @@ Diagnostics:
       readability-identifier-naming.ClassConstantCase: UPPER_CASE
       readability-identifier-naming.EnumConstantCase: CamelCase
 
-      # Other constants are snake_case
+      # Other constants are snake_case, except global/constexpr ones
       readability-identifier-naming.ConstantCase: lower_case
-      readability-identifier-naming.ConstexprVariableCase: lower_case
-      readability-identifier-naming.GlobalConstantCase: lower_case
+      readability-identifier-naming.ConstexprVariableCase: UPPER_CASE
+      readability-identifier-naming.GlobalConstantCase: UPPER_CASE
       readability-identifier-naming.LocalConstantCase: lower_case
 
       # Default is snake_case

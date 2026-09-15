@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QString>
+#include <iostream>
 #include <qsettings.h>
 
 Desktop::Desktop()
@@ -31,7 +32,7 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
 
     for (const QFileInfo& desktop_file : desktop_files)
     {
-        QSettings file(desktop_file.path(), QSettings::IniFormat);
+        QSettings file(desktop_file.filePath(), QSettings::IniFormat);
         file.beginGroup("Desktop Entry");
 
         // Get our file, need to consider its already in files
@@ -39,6 +40,8 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
         const std::string comment = file.value("Comment").toString().toStdString();
         const std::string exec = file.value("Exec").toString().toStdString();
         const std::string icon = file.value("Icon").toString().toStdString();
+
+        std::cout << name << '\n';
         const bool is_terminal = [&]
         {
             const QString term = file.value("Terminal").toString();

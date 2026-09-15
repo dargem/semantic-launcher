@@ -38,6 +38,8 @@ qt_add_executable(semantic-launcher
     src/main.cpp
     src/engine/search_engine.cpp
     src/data/database.cpp
+    src/data/sources/desktop.cpp
+    src/data/sources/pacman.cpp
     src/embedder/embedder.cpp
 )
 

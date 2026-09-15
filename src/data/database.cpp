@@ -1,8 +1,9 @@
 #include <rapidfuzz/rapidfuzz_all.hpp>
 
-#include "src/data/aggregator.hpp"
+#include "src/configs.hpp"
 #include "src/data/database.hpp"
-#include <limits>
+
+#include <iostream>
 
 using unum::usearch::index_dense_t;
 using unum::usearch::metric_kind_t;
@@ -14,7 +15,15 @@ Database::Database(Embedder embedder)
       m_vector_db(index_dense_t::make(
           metric_punned_t(embedder.get_dimensionality(), metric_kind_t::l2sq_k, scalar_kind_t::f32_k)))
 {
-    m_files = aggregate_results(AggregatorConfig{true, false, false, false, false});
+    for (const auto& aggregator : configs::AGGREGATORS)
+    {
+        if (!aggregator->check_applicable())
+        {
+            continue;
+        }
+        aggregator->aggregate(m_files, m_file_membership);
+    }
+
     m_vector_db.reserve(m_files.size());
     for (size_t i{}; i < m_files.size(); ++i)
     {
