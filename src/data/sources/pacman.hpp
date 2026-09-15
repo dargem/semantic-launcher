@@ -1,9 +1,9 @@
 #pragma once
 
-#include "src/data/sources/aggregator.hpp"
+#include "src/data/sources/i_aggregate.hpp"
 
 // Aggregates from pacman
-class Pacman : public IAggregator
+class Pacman : public IAggregate
 {
     bool check_applicable() const override;
 

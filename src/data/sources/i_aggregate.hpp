@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 // Abstract aggregator
-class IAggregator
+class IAggregate
 {
 public:
     // Validity check on whether this aggregation check should be used, i.e. pacman aggregator should check this system
@@ -14,4 +14,6 @@ public:
 
     // Take files and and a membership set, adds stuff it aggregates to files (checking for duplicates with membership)
     virtual void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const;
+
+    virtual ~IAggregate() = default;
 };

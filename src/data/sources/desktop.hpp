@@ -1,10 +1,10 @@
 #pragma once
 
-#include "src/data/sources/aggregator.hpp"
+#include "src/data/sources/i_aggregate.hpp"
 #include <filesystem>
 
 // Aggregates from .desktop files
-class Desktop : public IAggregator
+class Desktop : public IAggregate
 {
 public:
     Desktop();
