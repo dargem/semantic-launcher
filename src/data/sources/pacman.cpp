@@ -11,7 +11,7 @@ bool Pacman::check_applicable() const
     return !pacman.isEmpty();
 }
 
-void Pacman::aggregate(siv::Vector<File>& files, std::unordered_set<std::string> membership) const
+void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const
 {
     // pacman -Qqe get explicitly installed packages
     QProcess get_explicit_packages;
@@ -87,8 +87,8 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_set<std::string>
                 if (!membership.contains(temp_files[i].m_name))
                 {
                     // Insert if not already in it
-                    membership.insert(temp_files[i].m_name);
-                    files.push_back(temp_files[i]);
+                    siv::ID id = files.push_back(temp_files[i]);
+                    membership.emplace(temp_files[i].m_name, id);
                 }
             }
         }

@@ -7,5 +7,5 @@ class Pacman : public IAggregator
 {
     bool check_applicable() const override;
 
-    void aggregate(siv::Vector<File>& files, std::unordered_set<std::string> membership) const override;
+    void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const override;
 };

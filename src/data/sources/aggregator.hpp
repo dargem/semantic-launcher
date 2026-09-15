@@ -2,7 +2,7 @@
 
 #include "src/data/result.hpp"
 #include "src/utils/index_vector.hpp"
-#include <unordered_set>
+#include <unordered_map>
 
 // Abstract aggregator
 class IAggregator
@@ -13,5 +13,5 @@ public:
     virtual bool check_applicable() const;
 
     // Take files and and a membership set, adds stuff it aggregates to files (checking for duplicates with membership)
-    virtual void aggregate(siv::Vector<File>& files, std::unordered_set<std::string> membership) const;
+    virtual void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const;
 };
