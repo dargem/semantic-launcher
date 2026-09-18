@@ -30,4 +30,10 @@ inline constexpr double SEMANTIC_ACCEPTED_SCORE = 0.5;
 inline constexpr size_t FUZZY_ACCEPTED_K = 3;
 inline constexpr double FUZZY_ACCEPTED_SCORE = 0.6;
 
+// The terminals to check for on startup, if your terminal is not here it will not "see" it
+// Earlier on the list == higher preference, if an undesired terminal is being used reorder it,
+// or just delete the one you don't want
+inline static const std::vector<std::string> TERMINALS = {
+    "kitty", "alacritty", "wezterm", "konsole", "gnome-terminal", "xfce4-terminal", "foot", "xterm"};
+
 } // namespace configs
