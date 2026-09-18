@@ -1,5 +1,6 @@
 #include <rapidfuzz/rapidfuzz_all.hpp>
 
+#include "rapidfuzz/fuzz.hpp"
 #include "src/configs.hpp"
 #include "src/data/database.hpp"
 
@@ -63,14 +64,43 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
 // Use a fuzzy string match
 std::vector<Result> Database::get_match_best(std::string_view query, size_t n, double cut_off) const
 {
-    rapidfuzz::fuzz::CachedRatio<char> scorer(query);
+    // The partial ratio scorer does not care about lengths which can be good
+    // e.g. search for first word of a 5 word app it size dif should not disregard it
+    rapidfuzz::fuzz::CachedPartialRatio<char> scorer(query);
+
+    // But there is issue if the query is very short its easily 100%
+    rapidfuzz::fuzz::CachedRatio<char> exact_scorer(query);
 
     std::vector<Result> best_n;
     best_n.reserve(n); // May not use n in case < n results to match
 
+    auto eval = [&](std::string_view opt) -> double
+    {
+        if (opt.size() <= configs::EXACT_MATCH_SIZE_CUTOFF || query.size() <= configs::EXACT_MATCH_SIZE_CUTOFF)
+        {
+            // we use an exact match
+            if (opt == query)
+                return 1.0;
+            if (opt.starts_with(query))
+                return 0.9;
+            // Can do a contains if wanted as well
+            return 0.0;
+        }
+
+        return scorer.similarity(opt) / 100.0; // Normalize
+    };
+
     for (auto option : m_files)
     {
-        double score = scorer.similarity(option.m_name) / 100.0; // Normalize RapidFuzz's 0-100 score to 0-1
+        std::string_view opt = option.m_name;
+
+        if (opt.size() + 1 < query.size())
+        {
+            // If the query is a lot larger than option size probably not correct
+            continue;
+        }
+
+        double score = eval(opt);
 
         if (score < cut_off)
             continue;

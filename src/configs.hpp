@@ -41,4 +41,7 @@ inline constexpr double FUZZY_ACCEPTED_SCORE = 0.6;
 inline static const std::vector<std::string> TERMINALS = {
     "kitty", "alacritty", "wezterm", "konsole", "gnome-terminal", "xfce4-terminal", "foot", "xterm"};
 
+// The fuzzy match will use an exact match small strings (smaller than cutoff)
+inline constexpr size_t EXACT_MATCH_SIZE_CUTOFF = 2;
+
 } // namespace configs
