@@ -5,6 +5,8 @@
 #include "src/data/sources/pacman.hpp"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 // Config file, can move to json later if necessary
 
@@ -14,6 +16,9 @@
 
 namespace configs
 {
+
+// The embedding model to use, located in the models/ directory
+inline static const std::string MODEL_NAME = "model.gguf";
 
 inline auto const AGGREGATORS = []
 {

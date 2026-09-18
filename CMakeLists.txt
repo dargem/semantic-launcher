@@ -44,7 +44,7 @@ qt_add_executable(semantic-launcher
     src/launcher/launcher.cpp
 )
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/model.gguf ${CMAKE_CURRENT_BINARY_DIR}/model.gguf COPYONLY)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
 qt_add_qml_module(semantic-launcher
     URI SemanticLauncher
