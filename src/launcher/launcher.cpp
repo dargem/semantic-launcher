@@ -33,9 +33,13 @@ void Launcher::launch(File& f) const
     {
     case LaunchType::TERMINAL:
     {
-        QString full_cmd =
-            QString::fromStdString(f.m_args).isEmpty() ? program : program + " " + QString::fromStdString(f.m_args);
-        QProcess::startDetached(QString::fromStdString(m_terminal_name), {"-e", full_cmd});
+        QString inner_cmd = program;
+        for (const QString& arg : arguments)
+            inner_cmd += " " + arg;
+        inner_cmd += "; exec bash";
+
+        QStringList term_args = {"-e", "bash", "-c", inner_cmd};
+        QProcess::startDetached(QString::fromStdString(m_terminal_name), term_args);
         break;
     }
     case LaunchType::DIRECT:
