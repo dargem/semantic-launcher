@@ -2,11 +2,9 @@
 
 #include "src/configs.hpp"
 #include "src/data/result.hpp"
-#include "sys/wait.h"
 #include <QProcess>
 #include <qprocess.h>
 #include <stdexcept>
-#include <unistd.h>
 
 Launcher::Launcher()
 {
@@ -21,39 +19,29 @@ Launcher::Launcher()
         }
     }
 
+    if (!m_terminal_name.empty())
+        return;
     throw std::runtime_error("No terminal found, check configs.hpp");
 }
 
-bool Launcher::launch(File& f) const
+void Launcher::launch(File& f) const
 {
-    // Can be launching this file by command or terminal depending if its gui or not
+    QString program = QString::fromStdString(f.m_executable.string());
+    QStringList arguments = QProcess::splitCommand(QString::fromStdString(f.m_args));
 
-    // Need to use a double fork to prevent zombies (spawn grandchild process)
-    pid_t pid = fork();
-
-    if (pid == 0)
+    switch (f.m_launch_type)
     {
-        // We are first child
-        pid_t child_pid = fork();
-
-        if (child_pid == 0)
-        {
-            // We are grandchild and can exec our process now
-            switch (f.m_launch_type)
-            {
-            case LaunchType::TERMINAL:
-                break;
-            case LaunchType::DIRECT:
-                break;
-            }
-        }
+    case LaunchType::TERMINAL:
+    {
+        QString full_cmd =
+            QString::fromStdString(f.m_args).isEmpty() ? program : program + " " + QString::fromStdString(f.m_args);
+        QProcess::startDetached(QString::fromStdString(m_terminal_name), {"-e", full_cmd});
+        break;
     }
-
-    int status;
-    waitpid(pid, &status, 0); // Blocking until spawned
-
-    if (status == -1)
+    case LaunchType::DIRECT:
     {
-        // Error has occurred need to log later
+        QProcess::startDetached(program, arguments);
+        break;
+    }
     }
 }

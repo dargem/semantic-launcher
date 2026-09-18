@@ -8,7 +8,7 @@ class Launcher
 public:
     Launcher();
 
-    bool launch(File& f) const;
+    void launch(File& f) const;
 
 private:
     std::string m_terminal_name;

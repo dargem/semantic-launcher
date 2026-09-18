@@ -2,6 +2,7 @@
 #include "src/data/result.hpp"
 #include "src/utils/index_vector.hpp"
 #include <QDir>
+#include <QProcess>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QString>
@@ -52,6 +53,31 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
 
         LaunchType lt = is_terminal ? LaunchType::TERMINAL : LaunchType::DIRECT;
 
+        QStringList split = QProcess::splitCommand(QString::fromStdString(exec));
+        std::string exec_path;
+        std::string args;
+        if (!split.isEmpty())
+        {
+            exec_path = split.takeFirst().toStdString();
+            QStringList filtered_args;
+            for (const QString& arg : split)
+            {
+                if (arg.startsWith('%'))
+                {
+                    continue; // Skip field codes like %u, %F, etc.
+                }
+                if (arg.contains(' '))
+                {
+                    filtered_args.append("\"" + arg + "\"");
+                }
+                else
+                {
+                    filtered_args.append(arg);
+                }
+            }
+            args = filtered_args.join(' ').toStdString();
+        }
+
         if (membership.contains(name))
         {
             // We will do an overwrite as desktop is high priority
@@ -60,14 +86,15 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
 
             file.m_name = name;
             file.m_description = comment;
-            file.m_executable = exec;
+            file.m_executable = exec_path;
+            file.m_args = args;
             file.m_icon = icon;
             file.m_launch_type = lt;
             continue;
         }
 
         // Make a new entry else-wise
-        siv::ID id = files.push_back(File{name, exec, comment, lt, icon});
+        siv::ID id = files.push_back(File{name, exec_path, args, comment, lt, icon});
         membership.emplace(name, id);
     }
 }

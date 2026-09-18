@@ -1,6 +1,7 @@
 #pragma once
 #include "src/data/database.hpp"
 #include "src/data/result.hpp"
+#include "src/launcher/launcher.hpp"
 #include <QAbstractListModel>
 #include <QObject>
 
@@ -44,7 +45,8 @@ class SearchEngine : public QObject
     Q_OBJECT
     Q_PROPERTY(SearchResultModel* results READ results CONSTANT)
 public:
-    explicit SearchEngine(QObject* parent = nullptr) : m_model(), m_database(Embedder("model.gguf")) {};
+    explicit SearchEngine(Launcher launcher, QObject* parent = nullptr)
+        : m_model(), m_database(Embedder("model.gguf")), m_launcher(launcher) {};
 
     Q_INVOKABLE void search(const QString& query); // gets called from QML on every keystroke
     Q_INVOKABLE void launch(int index);            // gets called on Enter / click
@@ -57,5 +59,6 @@ public:
 private:
     SearchResultModel m_model;
     Database m_database;
+    Launcher m_launcher;
     // fuzzy matcher, ANN index, desktop-entry cache, etc
 };
