@@ -7,5 +7,6 @@ public:
     void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const override;
 
     ~AppImage() = default;
+
 private:
 };

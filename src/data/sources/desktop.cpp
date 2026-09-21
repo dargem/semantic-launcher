@@ -33,27 +33,9 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
 
     for (const QFileInfo& desktop_file : desktop_files)
     {
-        QSettings file(desktop_file.filePath(), QSettings::IniFormat);
-        file.beginGroup("Desktop Entry");
+        auto entry = load_entry(desktop_file);
 
-        // Get our file, need to consider its already in files
-        const std::string name = file.value("Name").toString().toStdString();
-        const std::string comment = file.value("Comment").toString().toStdString();
-        const std::string exec = file.value("Exec").toString().toStdString();
-        const std::string icon = file.value("Icon").toString().toStdString();
-
-        std::cout << name << '\n';
-        const bool is_terminal = [&]
-        {
-            const QString term = file.value("Terminal").toString();
-            return term == "true";
-        }();
-
-        file.endGroup();
-
-        LaunchType lt = is_terminal ? LaunchType::TERMINAL : LaunchType::DIRECT;
-
-        QStringList split = QProcess::splitCommand(QString::fromStdString(exec));
+        QStringList split = QProcess::splitCommand(QString::fromStdString(entry.m_exec));
         std::string exec_path;
         std::string args;
         if (!split.isEmpty())
@@ -78,23 +60,48 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
             args = filtered_args.join(' ').toStdString();
         }
 
-        if (membership.contains(name))
+        if (membership.contains(entry.m_name))
         {
             // We will do an overwrite as desktop is high priority
-            siv::ID id = membership[name];
+            siv::ID id = membership[entry.m_name];
             File& file = files[id];
 
-            file.m_name = name;
-            file.m_description = comment;
+            file.m_name = entry.m_name;
+            file.m_description = entry.m_comment;
             file.m_executable = exec_path;
             file.m_args = args;
-            file.m_icon = icon;
-            file.m_launch_type = lt;
+            file.m_icon = entry.m_icon;
+            file.m_launch_type = entry.m_launch_type;
             continue;
         }
 
         // Make a new entry else-wise
-        siv::ID id = files.push_back(File{name, exec_path, args, comment, lt, icon});
-        membership.emplace(name, id);
+        siv::ID id =
+            files.push_back(File{entry.m_name, entry.m_exec, args, entry.m_comment, entry.m_launch_type, entry.m_icon});
+        membership.emplace(entry.m_name, id);
     }
+}
+
+DesktopEntry Desktop::load_entry(const QFileInfo& desktop_file)
+{
+    QSettings file(desktop_file.filePath(), QSettings::IniFormat);
+    file.beginGroup("Desktop Entry");
+
+    // Get our file, need to consider its already in files
+    const std::string name = file.value("Name").toString().toStdString();
+    const std::string comment = file.value("Comment").toString().toStdString();
+    const std::string exec = file.value("Exec").toString().toStdString();
+    const std::string icon = file.value("Icon").toString().toStdString();
+
+    std::cout << name << '\n';
+    const bool is_terminal = [&]
+    {
+        const QString term = file.value("Terminal").toString();
+        return term == "true";
+    }();
+
+    file.endGroup();
+
+    LaunchType lt = is_terminal ? LaunchType::TERMINAL : LaunchType::DIRECT;
+    return DesktopEntry{name, comment, exec, icon, lt};
 }
