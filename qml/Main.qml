@@ -81,6 +81,10 @@ Window {
                         id: hoverArea
                         anchors.fill: parent
                         hoverEnabled: true
+                        onClicked: {
+                            resultsList.currentIndex = index
+                            searchEngine.launch(index)
+                        }
                     }
 
                     Column {

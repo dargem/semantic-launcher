@@ -3,6 +3,8 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QStandardPaths>
+#include <unordered_set>
+#include <vector>
 
 // Check if pacman is available
 bool Pacman::check_applicable() const
@@ -22,9 +24,13 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
     // filter out which packages aren't executable
     QProcess check_executable;
     QStringList check_args = {"-Ql"};
-    QStringList processed_pkg_names{};
 
-    std::vector<File> temp_files;
+    struct TempFile {
+        std::string pkg_name;
+        File file;
+    };
+
+    std::vector<TempFile> temp_files;
     temp_files.reserve(pkg_names.size());
 
     for (auto name : pkg_names)
@@ -43,10 +49,14 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
 
             if (path.startsWith("/usr/bin/") || path.startsWith("/usr/local/bin/") || path.startsWith("/opt/"))
             {
-                QFileInfo file(path);
-                if (file.exists() && file.isExecutable() && file.isFile())
+                QFileInfo file_info(path);
+                if (file_info.exists() && file_info.isExecutable() && file_info.isFile())
                 {
-                    temp_files.push_back(File{name.toStdString(), std::filesystem::path(path.toStdString())});
+                    std::string exec_name = file_info.fileName().toStdString();
+                    temp_files.push_back(TempFile{
+                        name.toStdString(),
+                        File{exec_name, std::filesystem::path(path.toStdString())}
+                    });
                 }
             }
         }
@@ -63,34 +73,57 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
     // We have files but for each need to fill in description and add them
     QProcess get_info;
     QStringList args = {"-Qi"};
-    for (auto& file : temp_files)
+    QStringList unique_pkg_names;
+    std::unordered_set<std::string> unique_pkgs;
+    for (auto& temp : temp_files)
     {
-        args += QString::fromStdString(file.m_name);
+        if (!unique_pkgs.contains(temp.pkg_name))
+        {
+            unique_pkgs.insert(temp.pkg_name);
+            unique_pkg_names += QString::fromStdString(temp.pkg_name);
+        }
     }
 
+    args += unique_pkg_names;
     get_info.start("pacman", args);
     get_info.waitForFinished();
     QString info_blob = get_info.readAllStandardOutput();
 
-    // split on blank-line-separated blocks, one per package
+    // Parse the info_blob into a map of package_name -> description
+    std::unordered_map<std::string, std::string> pkg_descriptions;
     const QStringList blocks = info_blob.split("\n\n", Qt::SkipEmptyParts);
-
-    for (auto const [i, block] : std::views::enumerate(blocks))
+    for (const QString& block : blocks)
     {
         QString name, description;
         for (const QString& line : block.split('\n'))
         {
-            if (line.startsWith("Description"))
+            if (line.startsWith("Name"))
             {
-                temp_files[i].m_description = line.section(": ", 1).toStdString();
-
-                if (!membership.contains(temp_files[i].m_name))
-                {
-                    // Insert if not already in it
-                    siv::ID id = files.push_back(temp_files[i]);
-                    membership.emplace(temp_files[i].m_name, id);
-                }
+                name = line.section(':', 1).trimmed();
             }
+            else if (line.startsWith("Description"))
+            {
+                description = line.section(':', 1).trimmed();
+            }
+        }
+        if (!name.isEmpty())
+        {
+            pkg_descriptions[name.toStdString()] = description.toStdString();
+        }
+    }
+
+    // Now assign descriptions and add to files
+    for (auto& temp : temp_files)
+    {
+        if (pkg_descriptions.contains(temp.pkg_name))
+        {
+            temp.file.m_description = pkg_descriptions[temp.pkg_name];
+        }
+
+        if (!membership.contains(temp.file.m_name))
+        {
+            siv::ID id = files.push_back(temp.file);
+            membership.emplace(temp.file.m_name, id);
         }
     }
 }
