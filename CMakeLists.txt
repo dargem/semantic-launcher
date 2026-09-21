@@ -42,6 +42,7 @@ qt_add_executable(semantic-launcher
     src/data/sources/pacman.cpp
     src/embedder/embedder.cpp
     src/launcher/launcher.cpp
+    src/data/sources/appimage.cpp
 )
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

@@ -33,32 +33,7 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
 
     for (const QFileInfo& desktop_file : desktop_files)
     {
-        auto entry = load_entry(desktop_file);
-
-        QStringList split = QProcess::splitCommand(QString::fromStdString(entry.m_exec));
-        std::string exec_path;
-        std::string args;
-        if (!split.isEmpty())
-        {
-            exec_path = split.takeFirst().toStdString();
-            QStringList filtered_args;
-            for (const QString& arg : split)
-            {
-                if (arg.startsWith('%'))
-                {
-                    continue; // Skip field codes like %u, %F, etc.
-                }
-                if (arg.contains(' '))
-                {
-                    filtered_args.append("\"" + arg + "\"");
-                }
-                else
-                {
-                    filtered_args.append(arg);
-                }
-            }
-            args = filtered_args.join(' ').toStdString();
-        }
+        File entry = load_entry(desktop_file);
 
         if (membership.contains(entry.m_name))
         {
@@ -67,22 +42,21 @@ void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string
             File& file = files[id];
 
             file.m_name = entry.m_name;
-            file.m_description = entry.m_comment;
-            file.m_executable = exec_path;
-            file.m_args = args;
+            file.m_description = entry.m_description;
+            file.m_executable = entry.m_executable;
+            file.m_args = entry.m_args;
             file.m_icon = entry.m_icon;
             file.m_launch_type = entry.m_launch_type;
             continue;
         }
 
         // Make a new entry else-wise
-        siv::ID id =
-            files.push_back(File{entry.m_name, entry.m_exec, args, entry.m_comment, entry.m_launch_type, entry.m_icon});
+        siv::ID id = files.push_back(entry);
         membership.emplace(entry.m_name, id);
     }
 }
 
-DesktopEntry Desktop::load_entry(const QFileInfo& desktop_file)
+File Desktop::load_entry(const QFileInfo& desktop_file)
 {
     QSettings file(desktop_file.filePath(), QSettings::IniFormat);
     file.beginGroup("Desktop Entry");
@@ -103,5 +77,37 @@ DesktopEntry Desktop::load_entry(const QFileInfo& desktop_file)
     file.endGroup();
 
     LaunchType lt = is_terminal ? LaunchType::TERMINAL : LaunchType::DIRECT;
-    return DesktopEntry{name, comment, exec, icon, lt};
+
+    QStringList split = QProcess::splitCommand(QString::fromStdString(exec));
+    std::string exec_path;
+    std::string args;
+    if (!split.isEmpty())
+    {
+        exec_path = split.takeFirst().toStdString();
+        QStringList filtered_args;
+        for (const QString& arg : split)
+        {
+            if (arg.startsWith('%'))
+            {
+                continue; // Skip field codes like %u, %F, etc.
+            }
+            if (arg.contains(' '))
+            {
+                filtered_args.append("\"" + arg + "\"");
+            }
+            else
+            {
+                filtered_args.append(arg);
+            }
+        }
+        args = filtered_args.join(' ').toStdString();
+    }
+
+    std::optional<std::filesystem::path> icon_path;
+    if (!icon.empty())
+    {
+        icon_path = std::filesystem::path(icon);
+    }
+
+    return File{name, std::filesystem::path(exec_path), args, comment, lt, icon_path};
 }
