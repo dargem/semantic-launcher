@@ -6,8 +6,10 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QString>
+#include <algorithm>
 #include <iostream>
 #include <qsettings.h>
+#include <ranges>
 
 Desktop::Desktop()
 {
@@ -24,16 +26,25 @@ Desktop::Desktop()
 
 bool Desktop::check_applicable() const
 {
-    QDir dir(QString::fromStdString(m_desktop_folders->string()));
+    if (m_desktop_folders->empty())
+        return false;
 
-    return dir.exists();
+    auto dirs =
+        m_desktop_folders.value() | std::views::transform([](const std::filesystem::path& path)
+                                                          { return QDir(QString::fromStdString(path.string())); });
+
+    return std::any_of(dirs.begin(), dirs.end(), [](const QDir& dir) { return dir.exists(); });
 }
 
 void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const
 {
-    QDir dir(QString::fromStdString(m_desktop_folders->string()));
-
-    const auto desktop_files = dir.entryInfoList({"*.desktop"}, QDir::Files);
+    auto desktop_files =
+        m_desktop_folders.value() |
+        std::views::transform([](const std::filesystem::path& path)
+                              { return QDir(QString::fromStdString(path.string())); }) |
+        std::views::filter([](const QDir& dir) { return dir.exists(); }) |
+        std::views::transform([](const QDir& dir) { return dir.entryInfoList({"*.desktop"}, QDir::Files); }) |
+        std::views::join;
 
     for (const QFileInfo& desktop_file : desktop_files)
     {
