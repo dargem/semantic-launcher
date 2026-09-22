@@ -7,7 +7,6 @@
 #include <QProcess>
 #include <QStandardPaths>
 #include <QTemporaryDir>
-#include <iostream>
 
 bool AppImage::check_applicable() const
 {

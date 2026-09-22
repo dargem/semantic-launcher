@@ -12,11 +12,11 @@ enum class LaunchType
 
 struct File
 {
-    std::string m_name;
-    std::filesystem::path m_executable;
-    std::string m_args;        // Arguments for the executable
-    std::string m_description; // Short description of the file
-    LaunchType m_launch_type;
+    std::string m_name{};
+    std::filesystem::path m_executable{};
+    std::string m_args{};        // Arguments for the executable
+    std::string m_description{}; // Short description of the file
+    LaunchType m_launch_type{LaunchType::DIRECT};
     std::optional<std::filesystem::path> m_icon{};
 };
 

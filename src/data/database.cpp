@@ -4,8 +4,6 @@
 #include "src/configs.hpp"
 #include "src/data/database.hpp"
 
-#include <iostream>
-
 using unum::usearch::index_dense_t;
 using unum::usearch::metric_kind_t;
 using unum::usearch::metric_punned_t;
