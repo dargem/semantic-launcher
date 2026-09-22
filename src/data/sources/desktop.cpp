@@ -11,23 +11,27 @@
 
 Desktop::Desktop()
 {
-    QString desktop_dir = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
-    if (desktop_dir.size() != 0)
+    QStringList desktop_dir = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
+    std::vector<std::filesystem::path> out;
+    out.reserve(desktop_dir.size());
+    for (const auto& str : desktop_dir)
     {
-        m_desktop_folder = desktop_dir.toStdString();
+        out.push_back(str.toStdString());
     }
+    if (out.size())
+        m_desktop_folders = out;
 }
 
 bool Desktop::check_applicable() const
 {
-    QDir dir(QString::fromStdString(m_desktop_folder->string()));
+    QDir dir(QString::fromStdString(m_desktop_folders->string()));
 
     return dir.exists();
 }
 
 void Desktop::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const
 {
-    QDir dir(QString::fromStdString(m_desktop_folder->string()));
+    QDir dir(QString::fromStdString(m_desktop_folders->string()));
 
     const auto desktop_files = dir.entryInfoList({"*.desktop"}, QDir::Files);
 

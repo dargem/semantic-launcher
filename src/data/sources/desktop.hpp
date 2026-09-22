@@ -17,5 +17,5 @@ public:
     static File load_entry(const QFileInfo&);
 
 private:
-    std::optional<std::filesystem::path> m_desktop_folder; // Path to .desktop folder
+    std::optional<std::vector<std::filesystem::path>> m_desktop_folders; // Path to .desktop folders
 };
