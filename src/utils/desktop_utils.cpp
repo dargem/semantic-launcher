@@ -5,7 +5,7 @@
 #include <QStringList>
 #include <iostream>
 
-File DesktopUtils::load_entry(const QFileInfo& desktop_file)
+std::optional<File> DesktopUtils::load_entry(const QFileInfo& desktop_file)
 {
     QSettings file(desktop_file.filePath(), QSettings::IniFormat);
     file.beginGroup("Desktop Entry");
@@ -15,6 +15,14 @@ File DesktopUtils::load_entry(const QFileInfo& desktop_file)
     const std::string comment = file.value("Comment").toString().toStdString();
     const std::string exec = file.value("Exec").toString().toStdString();
     const std::string icon = file.value("Icon").toString().toStdString();
+    const bool no_display = file.value("NoDisplay").toBool();
+    const bool appstream_ignore = file.value("X-AppStream-Ignore").toBool();
+
+    if (exec == "/usr/bin/false" || no_display || appstream_ignore)
+    {
+        file.endGroup();
+        return std::nullopt;
+    }
 
     std::cout << name << '\n';
     const bool is_terminal = [&]

@@ -56,8 +56,13 @@ void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::strin
                         QFileInfo desktop_info(desktop_path);
                         if (desktop_info.exists())
                         {
-                            File entry = DesktopUtils::load_entry(desktop_info);
-
+                            auto entry_opt = DesktopUtils::load_entry(desktop_info);
+                            processed = true;
+                            if (!entry_opt)
+                            {
+                                continue;
+                            }
+                            const File& entry = *entry_opt;
                             std::string name = entry.m_name.empty() ? fallback_name : entry.m_name;
 
                             if (!membership.contains(name))
@@ -70,7 +75,6 @@ void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::strin
                                                                   entry.m_icon});
                                 membership.emplace(name, id);
                             }
-                            processed = true;
                         }
                     }
                 }

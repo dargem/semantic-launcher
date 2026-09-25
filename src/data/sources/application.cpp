@@ -48,7 +48,12 @@ void Application::aggregate(siv::Vector<File>& files, std::unordered_map<std::st
 
     for (const QFileInfo& desktop_file : desktop_files)
     {
-        File entry = DesktopUtils::load_entry(desktop_file);
+        auto entry_opt = DesktopUtils::load_entry(desktop_file);
+        if (!entry_opt)
+        {
+            continue;
+        }
+        const File& entry = *entry_opt;
 
         if (membership.contains(entry.m_name))
         {
