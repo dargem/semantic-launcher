@@ -16,7 +16,8 @@ public:
         IconRole,
         ExecRole,
         ScoreRole,
-        DescriptionRole
+        DescriptionRole,
+        IsTerminalRole
     };
 
     int rowCount(const QModelIndex& = QModelIndex()) const override

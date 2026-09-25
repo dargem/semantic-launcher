@@ -3,6 +3,7 @@
 #include "src/configs.hpp"
 #include "src/data/result.hpp"
 #include <QProcess>
+#include <QProcessEnvironment>
 #include <qprocess.h>
 #include <stdexcept>
 
@@ -29,6 +30,11 @@ void Launcher::launch(File& f) const
     QString program = QString::fromStdString(f.m_executable.string());
     QStringList arguments = QProcess::splitCommand(QString::fromStdString(f.m_args));
 
+    QProcess process;
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    env.remove("QT_WAYLAND_SHELL_INTEGRATION");
+    process.setProcessEnvironment(env);
+
     switch (f.m_launch_type)
     {
     case LaunchType::TERMINAL:
@@ -39,12 +45,16 @@ void Launcher::launch(File& f) const
         inner_cmd += "; exec bash";
 
         QStringList term_args = {"-e", "bash", "-c", inner_cmd};
-        QProcess::startDetached(QString::fromStdString(m_terminal_name), term_args);
+        process.setProgram(QString::fromStdString(m_terminal_name));
+        process.setArguments(term_args);
+        process.startDetached();
         break;
     }
     case LaunchType::DIRECT:
     {
-        QProcess::startDetached(program, arguments);
+        process.setProgram(program);
+        process.setArguments(arguments);
+        process.startDetached();
         break;
     }
     }

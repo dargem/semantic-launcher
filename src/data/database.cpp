@@ -31,6 +31,10 @@ Database::Database(Embedder embedder)
         File& file = m_files[key];
 
         // Consider also embedding name in future
+        if (file.m_description.empty())
+        {
+            continue; // Skip if this file has no description
+        }
         std::vector<float> embeddings = embedder.embed(file.m_description);
         m_vector_db.add(key, embeddings.data());
     }

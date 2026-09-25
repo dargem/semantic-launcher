@@ -17,13 +17,15 @@ QVariant SearchResultModel::data(const QModelIndex& index, int role) const
     case NameRole:
         return QString::fromStdString(e.m_file.m_name);
     case IconRole:
-        return QString::fromStdString(e.m_file.m_icon->string());
+        return e.m_file.m_icon.has_value() ? QString::fromStdString(e.m_file.m_icon->string()) : QString("");
     case ExecRole:
         return QString::fromStdString(e.m_file.m_executable.string());
     case ScoreRole:
         return e.m_score;
     case DescriptionRole:
         return QString::fromStdString(e.m_file.m_description);
+    case IsTerminalRole:
+        return e.m_file.m_launch_type == LaunchType::TERMINAL;
     }
 
     throw std::runtime_error("Invalid Role Requested");
@@ -35,7 +37,8 @@ QHash<int, QByteArray> SearchResultModel::roleNames() const
             {IconRole, "Icon"},
             {ExecRole, "execPath"},
             {ScoreRole, "Score"},
-            {DescriptionRole, "Description"}};
+            {DescriptionRole, "Description"},
+            {IsTerminalRole, "IsTerminal"}};
 }
 
 void SearchResultModel::set_results(const QList<Result>& results)

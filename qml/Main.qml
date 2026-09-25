@@ -87,28 +87,79 @@ Window {
                         }
                     }
 
-                    Column {
+                    Row {
                         anchors.left: parent.left
                         anchors.leftMargin: 12
                         anchors.verticalCenter: parent.verticalCenter
                         anchors.right: badgeColumn.left
                         anchors.rightMargin: 12
-                        spacing: 8
+                        spacing: 12
 
-                        Text {
-                            id: nameText
-                            text: Name
-                            color: "#f4f4f5"
-                            font.pixelSize: 18
-                            font.weight: Font.Medium
+                        Item {
+                            width: 40
+                            height: 40
+                            anchors.verticalCenter: parent.verticalCenter
+
+                            Button {
+                                anchors.fill: parent
+                                padding: 0
+                                flat: true
+                                enabled: true
+                                // Prevent any mouse/keyboard interaction so it behaves like a static icon
+                                focusPolicy: Qt.NoFocus
+                                hoverEnabled: false
+                                visible: Icon.length > 0
+                                icon.source: {
+                                    if (Icon.length === 0) return ""
+                                    if (Icon.startsWith("/") || Icon.startsWith("file://")) {
+                                        return Icon.startsWith("/") ? "file://" + Icon : Icon
+                                    }
+                                    return ""
+                                }
+                                icon.name: (!Icon.startsWith("/") && !Icon.startsWith("file://")) ? Icon : ""
+                                icon.color: "transparent"
+                                icon.width: 40
+                                icon.height: 40
+
+                                background: null
+
+                                // Consume mouse events so clicking the icon doesn't trigger button states
+                                MouseArea {
+                                    anchors.fill: parent
+                                    acceptedButtons: Qt.AllButtons
+                                    onPressed: {}
+                                }
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: IsTerminal ? ">_" : "🖵"
+                                color: "#9ca3af"
+                                font.pixelSize: 20
+                                visible: Icon.length == 0
+                            }
                         }
 
-                        Text {
-                            width: parent.width
-                            text: Description.length > 0 ? Description : "No description available"
-                            color: "#9ca3af"
-                            font.pixelSize: 12
-                            elide: Text.ElideRight
+                        Column {
+                            width: parent.width - 52
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 4
+
+                            Text {
+                                id: nameText
+                                text: Name
+                                color: "#f4f4f5"
+                                font.pixelSize: 18
+                                font.weight: Font.Medium
+                            }
+
+                            Text {
+                                width: parent.width
+                                text: Description.length > 0 ? Description : "No description available"
+                                color: "#9ca3af"
+                                font.pixelSize: 12
+                                elide: Text.ElideRight
+                            }
                         }
                     }
 

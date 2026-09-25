@@ -24,7 +24,7 @@ inline static const std::string MODEL_NAME = "model.gguf";
 inline auto const AGGREGATORS = []
 {
     std::vector<std::unique_ptr<IAggregate>> agg;
-    agg.push_back(std::make_unique<Pacman>());
+    // agg.push_back(std::make_unique<Pacman>());
     agg.push_back(std::make_unique<Desktop>());
     agg.push_back(std::make_unique<AppImage>());
     return agg;
