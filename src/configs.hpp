@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/data/sources/appimage.hpp"
-#include "src/data/sources/desktop.hpp"
+#include "src/data/sources/application.hpp"
 #include "src/data/sources/i_aggregate.hpp"
 #include "src/data/sources/pacman.hpp"
 
@@ -25,7 +25,7 @@ inline auto const AGGREGATORS = []
 {
     std::vector<std::unique_ptr<IAggregate>> agg;
     // agg.push_back(std::make_unique<Pacman>());
-    agg.push_back(std::make_unique<Desktop>());
+    agg.push_back(std::make_unique<Application>());
     agg.push_back(std::make_unique<AppImage>());
     return agg;
 }();

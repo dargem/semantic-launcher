@@ -1,20 +1,19 @@
 #pragma once
 
 #include "src/data/sources/i_aggregate.hpp"
-#include <QFileInfo>
 #include <filesystem>
+#include <optional>
+#include <unordered_map>
+#include <vector>
 
 // Aggregates from .desktop files
-class Desktop : public IAggregate
+class Application : public IAggregate
 {
 public:
-    Desktop();
+    Application();
     bool check_applicable() const override;
     void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const override;
-    ~Desktop() override = default;
-
-    // Takes a .desktop file entry and serializes it into a File
-    static File load_entry(const QFileInfo&);
+    ~Application() override = default;
 
 private:
     std::optional<std::vector<std::filesystem::path>> m_desktop_folders; // Path to .desktop folders

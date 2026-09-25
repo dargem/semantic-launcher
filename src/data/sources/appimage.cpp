@@ -1,5 +1,5 @@
 #include "src/data/sources/appimage.hpp"
-#include "src/data/sources/desktop.hpp"
+#include "src/utils/desktop_utils.hpp"
 
 #include <QDir>
 #include <QDirIterator>
@@ -56,7 +56,7 @@ void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::strin
                         QFileInfo desktop_info(desktop_path);
                         if (desktop_info.exists())
                         {
-                            File entry = Desktop::load_entry(desktop_info);
+                            File entry = DesktopUtils::load_entry(desktop_info);
 
                             std::string name = entry.m_name.empty() ? fallback_name : entry.m_name;
 
