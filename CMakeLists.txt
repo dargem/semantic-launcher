@@ -26,8 +26,12 @@ FetchContent_Declare(rapidfuzz
   GIT_TAG main)
 FetchContent_MakeAvailable(rapidfuzz)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Quick)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Quick Network)
 find_package(LayerShellQt REQUIRED)
+
+# Make sure these exist (at compile time at least I guess)
+find_program(MANDB_EXECUTABLE mandb REQUIRED)
+find_program(WHATIS_EXECUTABLE whatis REQUIRED)
 
 qt_standard_project_setup()
 
@@ -44,6 +48,7 @@ qt_add_executable(semantic-launcher
     src/launcher/launcher.cpp
     src/data/sources/appimage.cpp
     src/utils/desktop_utils.cpp
+    src/daemon/ipc.cpp
 )
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
@@ -57,6 +62,7 @@ qt_add_qml_module(semantic-launcher
 
 target_link_libraries(semantic-launcher
     PRIVATE Qt6::Quick
+    PRIVATE Qt6::Network
     PRIVATE LayerShellQt::Interface
     PRIVATE usearch::usearch
     PRIVATE llama

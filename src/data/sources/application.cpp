@@ -16,18 +16,13 @@ Application::Application()
     QStringList desktop_dir = QStandardPaths::standardLocations(QStandardPaths::ApplicationsLocation);
     std::vector<std::filesystem::path> out;
     out.reserve(desktop_dir.size());
-    for (const auto& str : desktop_dir)
-    {
-        out.push_back(str.toStdString());
-    }
-    if (out.size())
-        m_desktop_folders = out;
+    for (const auto& str : desktop_dir) { out.push_back(str.toStdString()); }
+    if (out.size()) m_desktop_folders = out;
 }
 
 bool Application::check_applicable() const
 {
-    if (m_desktop_folders->empty())
-        return false;
+    if (m_desktop_folders->empty()) return false;
 
     auto dirs =
         m_desktop_folders.value() | std::views::transform([](const std::filesystem::path& path)
@@ -36,7 +31,7 @@ bool Application::check_applicable() const
     return std::any_of(dirs.begin(), dirs.end(), [](const QDir& dir) { return dir.exists(); });
 }
 
-void Application::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const
+void Application::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID>& membership) const
 {
     auto desktop_files =
         m_desktop_folders.value() |
@@ -49,10 +44,7 @@ void Application::aggregate(siv::Vector<File>& files, std::unordered_map<std::st
     for (const QFileInfo& desktop_file : desktop_files)
     {
         auto entry_opt = DesktopUtils::load_entry(desktop_file);
-        if (!entry_opt)
-        {
-            continue;
-        }
+        if (!entry_opt) { continue; }
         const File& entry = *entry_opt;
 
         if (membership.contains(entry.m_name))

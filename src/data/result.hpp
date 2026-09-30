@@ -16,7 +16,7 @@ struct File
     std::filesystem::path m_executable{};
     std::string m_args{};        // Arguments for the executable
     std::string m_description{}; // Short description of the file
-    LaunchType m_launch_type{LaunchType::DIRECT};
+    LaunchType m_launch_type{LaunchType::TERMINAL};
     std::optional<std::filesystem::path> m_icon{};
 };
 

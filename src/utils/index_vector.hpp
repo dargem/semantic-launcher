@@ -41,44 +41,27 @@ public:
     }
 
     /// Pointer-like access to the underlying object
-    TObjectType* operator->()
-    {
-        return &(*m_vector)[m_id];
-    }
+    TObjectType* operator->() { return &(*m_vector)[m_id]; }
 
     /// Const pointer-like access to the object
-    TObjectType const* operator->() const
-    {
-        return &(*m_vector)[m_id];
-    }
+    TObjectType const* operator->() const { return &(*m_vector)[m_id]; }
 
     /// Dereference operator
-    TObjectType& operator*()
-    {
-        return (*m_vector)[m_id];
-    }
+    TObjectType& operator*() { return (*m_vector)[m_id]; }
 
     /// Dereference constant operator
-    TObjectType const& operator*() const
-    {
-        return (*m_vector)[m_id];
-    }
+    TObjectType const& operator*() const { return (*m_vector)[m_id]; }
 
     /// Returns the ID of the associated object
     [[nodiscard]]
     ID getID() const
-    {
-        return m_id;
-    }
+    { return m_id; }
 
     /** Bool operator to test against the validity of the reference
      *
      * @return false if uninitialized or if the object has been erased from the vector, true otherwise
      */
-    explicit operator bool() const
-    {
-        return isValid();
-    }
+    explicit operator bool() const { return isValid(); }
 
     /** Check if the reference is associated with a vector and has a correct validity ID
      *
@@ -86,9 +69,7 @@ public:
      */
     [[nodiscard]]
     bool isValid() const
-    {
-        return m_vector && m_vector->isValid(m_id, m_validity_id);
-    }
+    { return m_vector && m_vector->isValid(m_id, m_validity_id); }
 
 private:
     /// The ID of the object.
@@ -164,10 +145,7 @@ public:
      *
      * @param idx The index in the data vector of the object to remove
      */
-    void eraseViaData(uint32_t idx)
-    {
-        erase(m_metadata[idx].rid);
-    }
+    void eraseViaData(uint32_t idx) { erase(m_metadata[idx].rid); }
 
     /** Removes the object referenced by the handle from the vector
      *
@@ -189,50 +167,36 @@ public:
      */
     [[nodiscard]]
     uint64_t getDataIndex(ID id) const
-    {
-        return m_indexes[id];
-    }
+    { return m_indexes[id]; }
 
     /** Access the object reference by the provided ID
      *
      * @param id The object's ID
      * @return A reference to the object
      */
-    TObjectType& operator[](ID id)
-    {
-        return m_data[m_indexes[id]];
-    }
+    TObjectType& operator[](ID id) { return m_data[m_indexes[id]]; }
 
     /** Access the object reference by the provided ID
      *
      * @param id The object's ID
      * @return A constant reference to the object
      */
-    TObjectType const& operator[](ID id) const
-    {
-        return m_data[m_indexes[id]];
-    }
+    TObjectType const& operator[](ID id) const { return m_data[m_indexes[id]]; }
 
     /// Returns the number of objects in the vector
     [[nodiscard]]
     size_t size() const
-    {
-        return m_data.size();
-    }
+    { return m_data.size(); }
 
     /// Tells if the vector is currently empty
     [[nodiscard]]
     bool empty() const
-    {
-        return m_data.empty();
-    }
+    { return m_data.empty(); }
 
     /// Returns the vector's capacity (i.e. the number of allocated slots in the vector)
     [[nodiscard]]
     size_t capacity() const
-    {
-        return m_data.capacity();
-    }
+    { return m_data.capacity(); }
 
     /** Creates a handle pointing to the provided ID
      *
@@ -268,33 +232,19 @@ public:
      */
     [[nodiscard]]
     bool isValid(ID id, ID validity_id) const
-    {
-        return validity_id == m_metadata[m_indexes[id]].validity_id;
-    }
+    { return validity_id == m_metadata[m_indexes[id]].validity_id; }
 
     /// Begin iterator of the data vector
-    typename std::vector<TObjectType>::iterator begin() noexcept
-    {
-        return m_data.begin();
-    }
+    typename std::vector<TObjectType>::iterator begin() noexcept { return m_data.begin(); }
 
     /// End iterator of the data vector
-    typename std::vector<TObjectType>::iterator end() noexcept
-    {
-        return m_data.end();
-    }
+    typename std::vector<TObjectType>::iterator end() noexcept { return m_data.end(); }
 
     /// Const begin iterator of the data vector
-    typename std::vector<TObjectType>::const_iterator begin() const noexcept
-    {
-        return m_data.begin();
-    }
+    typename std::vector<TObjectType>::const_iterator begin() const noexcept { return m_data.begin(); }
 
     /// Const end iterator of the data vector
-    typename std::vector<TObjectType>::const_iterator end() const noexcept
-    {
-        return m_data.end();
-    }
+    typename std::vector<TObjectType>::const_iterator end() const noexcept { return m_data.end(); }
 
     /** Removes all objects that match the provided predicate
      *
@@ -306,10 +256,7 @@ public:
     {
         for (uint32_t i{0}; i < m_data.size();)
         {
-            if (predicate(m_data[i]))
-            {
-                eraseViaData(i);
-            }
+            if (predicate(m_data[i])) { eraseViaData(i); }
             else
             {
                 ++i;
@@ -331,37 +278,23 @@ public:
     /// Return the validity ID associated with the provided ID
     [[nodiscard]]
     ID getValidityID(ID id) const
-    {
-        return m_metadata[m_indexes[id]].validity_id;
-    }
+    { return m_metadata[m_indexes[id]].validity_id; }
 
     /// Returns a raw pointer to the first element of the data vector
-    TObjectType* data()
-    {
-        return m_data.data();
-    }
+    TObjectType* data() { return m_data.data(); }
 
     /// Returns a reference to the data vector
-    std::vector<TObjectType>& getData()
-    {
-        return m_data;
-    }
+    std::vector<TObjectType>& getData() { return m_data; }
 
     /// Returns a constant reference to the data vector
-    const std::vector<TObjectType>& getData() const
-    {
-        return m_data;
-    }
+    const std::vector<TObjectType>& getData() const { return m_data; }
 
     /// Returns the ID that would be used if an object was added
     [[nodiscard]]
     ID getNextID() const
     {
         // This means that we have available slots
-        if (m_metadata.size() > m_data.size())
-        {
-            return m_metadata[m_data.size()].rid;
-        }
+        if (m_metadata.size() > m_data.size()) { return m_metadata[m_data.size()].rid; }
         return m_data.size();
     }
 
@@ -380,9 +313,7 @@ public:
 
     [[nodiscard]]
     bool isValidID(siv::ID id) const
-    {
-        return id < m_indexes.size();
-    }
+    { return id < m_indexes.size(); }
 
 private:
     /** Creates a new slot in the vector

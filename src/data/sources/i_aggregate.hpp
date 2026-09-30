@@ -13,7 +13,7 @@ public:
     virtual bool check_applicable() const = 0;
 
     // Take files and and a membership set, adds stuff it aggregates to files (checking for duplicates with membership)
-    virtual void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const = 0;
+    virtual void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID>& membership) const = 0;
 
     virtual ~IAggregate() = default;
 };

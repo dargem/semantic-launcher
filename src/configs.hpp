@@ -5,6 +5,9 @@
 #include "src/data/sources/i_aggregate.hpp"
 #include "src/data/sources/pacman.hpp"
 
+#include <QStandardPaths>
+#include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -21,10 +24,30 @@ namespace configs
 // The embedding model to use, located in the models/ directory
 inline static const std::string MODEL_NAME = "model.gguf";
 
+inline std::string resolve_model_path(const std::string& name = MODEL_NAME)
+{
+    if (const char* env = std::getenv("SEMANTIC_LAUNCHER_MODEL_PATH"))
+    {
+        if (std::filesystem::exists(env)) return env;
+    }
+
+    for (const auto& dir :
+         {std::filesystem::current_path() / "models",
+          std::filesystem::current_path(),
+          std::filesystem::path("/usr/share/semantic-launcher/models"),
+          std::filesystem::path(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString()) /
+              "models"})
+    {
+        auto path = dir / name;
+        if (std::filesystem::exists(path)) return path.string();
+    }
+    return "models/" + name;
+}
+
 inline auto const AGGREGATORS = []
 {
     std::vector<std::unique_ptr<IAggregate>> agg;
-    // agg.push_back(std::make_unique<Pacman>());
+    agg.push_back(std::make_unique<Pacman>());
     agg.push_back(std::make_unique<Application>());
     agg.push_back(std::make_unique<AppImage>());
     return agg;

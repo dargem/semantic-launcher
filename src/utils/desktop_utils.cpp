@@ -48,10 +48,7 @@ std::optional<File> DesktopUtils::load_entry(const QFileInfo& desktop_file)
             {
                 continue; // Skip field codes like %u, %F, etc.
             }
-            if (arg.contains(' '))
-            {
-                filtered_args.append("\"" + arg + "\"");
-            }
+            if (arg.contains(' ')) { filtered_args.append("\"" + arg + "\""); }
             else
             {
                 filtered_args.append(arg);
@@ -61,10 +58,7 @@ std::optional<File> DesktopUtils::load_entry(const QFileInfo& desktop_file)
     }
 
     std::optional<std::filesystem::path> icon_path;
-    if (!icon.empty())
-    {
-        icon_path = std::filesystem::path(icon);
-    }
+    if (!icon.empty()) { icon_path = std::filesystem::path(icon); }
 
     return File{name, std::filesystem::path(exec_path), args, comment, lt, icon_path};
 }

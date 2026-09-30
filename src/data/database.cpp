@@ -16,10 +16,7 @@ Database::Database(Embedder embedder)
 {
     for (const auto& aggregator : configs::AGGREGATORS)
     {
-        if (!aggregator->check_applicable())
-        {
-            continue;
-        }
+        if (!aggregator->check_applicable()) { continue; }
         aggregator->aggregate(m_files, m_file_membership);
     }
 
@@ -35,7 +32,8 @@ Database::Database(Embedder embedder)
         {
             continue; // Skip if this file has no description
         }
-        std::vector<float> embeddings = embedder.embed(file.m_description);
+        std::vector<float> embeddings = embedder.embed(file.m_description); // Is normalized
+
         m_vector_db.add(key, embeddings.data());
     }
 };
@@ -52,10 +50,7 @@ std::vector<Result> Database::get_semantic_best(std::string_view query, size_t n
     {
         const int key = results[i].member.key;
         const float score = 1.0f / (1.0f + results[i].distance);
-        if (score >= cut_off)
-        {
-            out.push_back(Result{m_files[key], score});
-        }
+        if (score >= cut_off) { out.push_back(Result{m_files[key], score}); }
     }
 
     std::sort(out.begin(), out.end(), [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
@@ -81,10 +76,8 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n, d
         if (opt.size() <= configs::EXACT_MATCH_SIZE_CUTOFF || query.size() <= configs::EXACT_MATCH_SIZE_CUTOFF)
         {
             // we use an exact match
-            if (opt == query)
-                return 1.0;
-            if (opt.starts_with(query))
-                return 0.9;
+            if (opt == query) return 1.0;
+            if (opt.starts_with(query)) return 0.9;
             // Can do a contains if wanted as well
             return 0.0;
         }
@@ -104,8 +97,7 @@ std::vector<Result> Database::get_match_best(std::string_view query, size_t n, d
 
         double score = eval(opt);
 
-        if (score < cut_off)
-            continue;
+        if (score < cut_off) continue;
 
         if (best_n.size() < n)
         {

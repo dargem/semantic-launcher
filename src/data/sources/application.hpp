@@ -12,7 +12,7 @@ class Application : public IAggregate
 public:
     Application();
     bool check_applicable() const override;
-    void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const override;
+    void aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID>& membership) const override;
     ~Application() override = default;
 
 private:

@@ -1,27 +1,35 @@
 #include "src/embedder/embedder.hpp"
 
 #include <cmath>
+#include <filesystem>
 #include <numeric>
+#include <stdexcept>
 #include <stdfloat>
 
 Embedder::Embedder(const std::string& model_path)
 {
+    if (!std::filesystem::exists(model_path))
+    {
+        throw std::runtime_error("Embedding model file not found: " + model_path +
+                                 "\nPlease ensure model.gguf exists in ~/.local/share/semantic-launcher/models/, "
+                                 "/usr/share/semantic-launcher/models/, or set SEMANTIC_LAUNCHER_MODEL_PATH.");
+    }
+
     llama_backend_init();
 
     llama_model_params mparams = llama_model_default_params();
     m_model = llama_model_load_from_file(model_path.c_str(), mparams);
+    if (!m_model) { throw std::runtime_error("Failed to load llama model from: " + model_path); }
 
     llama_context_params cparams = llama_context_default_params();
     cparams.embeddings = true;
     cparams.pooling_type = LLAMA_POOLING_TYPE_CLS;
     cparams.n_ubatch = cparams.n_batch = 512;
     m_ctx = llama_init_from_model(m_model, cparams);
+    if (!m_ctx) { throw std::runtime_error("Failed to initialize llama context from model: " + model_path); }
 }
 
-int Embedder::get_dimensionality() const
-{
-    return llama_model_n_embd(m_model);
-}
+int Embedder::get_dimensionality() const { return llama_model_n_embd(m_model); }
 
 std::vector<float> Embedder::embed(std::string_view text) const
 {
@@ -43,7 +51,6 @@ std::vector<float> Embedder::embed(std::string_view text) const
 
     // normalize for cosine similarity
     float norm = std::sqrt(std::inner_product(result.begin(), result.end(), result.begin(), 0.0f));
-    for (auto& v : result)
-        v /= norm;
+    for (auto& v : result) v /= norm;
     return result;
 }

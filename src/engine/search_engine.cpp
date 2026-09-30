@@ -14,18 +14,12 @@ QVariant SearchResultModel::data(const QModelIndex& index, int role) const
 
     switch (role)
     {
-    case NameRole:
-        return QString::fromStdString(e.m_file.m_name);
-    case IconRole:
-        return e.m_file.m_icon.has_value() ? QString::fromStdString(e.m_file.m_icon->string()) : QString("");
-    case ExecRole:
-        return QString::fromStdString(e.m_file.m_executable.string());
-    case ScoreRole:
-        return e.m_score;
-    case DescriptionRole:
-        return QString::fromStdString(e.m_file.m_description);
-    case IsTerminalRole:
-        return e.m_file.m_launch_type == LaunchType::TERMINAL;
+    case NameRole: return QString::fromStdString(e.m_file.m_name);
+    case IconRole: return e.m_file.m_icon.has_value() ? QString::fromStdString(e.m_file.m_icon->string()) : QString("");
+    case ExecRole: return QString::fromStdString(e.m_file.m_executable.string());
+    case ScoreRole: return e.m_score;
+    case DescriptionRole: return QString::fromStdString(e.m_file.m_description);
+    case IsTerminalRole: return e.m_file.m_launch_type == LaunchType::TERMINAL;
     }
 
     throw std::runtime_error("Invalid Role Requested");
@@ -58,10 +52,7 @@ void SearchResultModel::set_results(const QList<Result>& results)
     size_t common_size = std::min(old_size, new_size);
     if (common_size > 0)
     {
-        for (size_t i = 0; i < common_size; ++i)
-        {
-            m_results[i] = results[i];
-        }
+        for (size_t i = 0; i < common_size; ++i) { m_results[i] = results[i]; }
         emit dataChanged(index(0), index(common_size - 1));
     }
 
@@ -69,10 +60,7 @@ void SearchResultModel::set_results(const QList<Result>& results)
     if (new_size > old_size)
     {
         beginInsertRows(QModelIndex(), old_size, new_size - 1);
-        for (size_t i = old_size; i < new_size; ++i)
-        {
-            m_results.append(results[i]);
-        }
+        for (size_t i = old_size; i < new_size; ++i) { m_results.append(results[i]); }
         endInsertRows();
     }
 }
@@ -96,18 +84,12 @@ Q_INVOKABLE void SearchEngine::search(const QString& query)
     {
         const auto key = result.m_file.m_name;
         auto [it, inserted] = merged_results.try_emplace(key, result);
-        if (!inserted && it->second.m_score < result.m_score)
-        {
-            it->second = result;
-        }
+        if (!inserted && it->second.m_score < result.m_score) { it->second = result; }
     }
 
     std::vector<Result> ranked_results;
     ranked_results.reserve(merged_results.size());
-    for (auto& [_, result] : merged_results)
-    {
-        ranked_results.push_back(result);
-    }
+    for (auto& [_, result] : merged_results) { ranked_results.push_back(result); }
 
     std::sort(ranked_results.begin(),
               ranked_results.end(),
@@ -120,10 +102,7 @@ Q_INVOKABLE void SearchEngine::search(const QString& query)
 Q_INVOKABLE void SearchEngine::launch(int index)
 {
     Result result = m_model.get_result(index);
-    if (result.m_file.m_executable.empty())
-    {
-        return;
-    }
+    if (result.m_file.m_executable.empty()) { return; }
 
     m_launcher.launch(result.m_file);
 }

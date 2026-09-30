@@ -1,4 +1,5 @@
 #include "src/data/sources/pacman.hpp"
+#include "src/data/result.hpp"
 
 #include <QFileInfo>
 #include <QProcess>
@@ -13,7 +14,7 @@ bool Pacman::check_applicable() const
     return !pacman.isEmpty();
 }
 
-void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const
+void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID>& membership) const
 {
     // pacman -Qqe get explicitly installed packages
     QProcess get_explicit_packages;
@@ -25,7 +26,8 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
     QProcess check_executable;
     QStringList check_args = {"-Ql"};
 
-    struct TempFile {
+    struct TempFile
+    {
         std::string pkg_name;
         File file;
     };
@@ -44,8 +46,7 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
         for (auto line : lines)
         {
             QString path = line.section(' ', 1); // everything after the first space
-            if (path.endsWith("/"))
-                continue; // Directory
+            if (path.endsWith("/")) continue;    // Directory
 
             if (path.startsWith("/usr/bin/") || path.startsWith("/usr/local/bin/") || path.startsWith("/opt/"))
             {
@@ -53,10 +54,8 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
                 if (file_info.exists() && file_info.isExecutable() && file_info.isFile())
                 {
                     std::string exec_name = file_info.fileName().toStdString();
-                    temp_files.push_back(TempFile{
-                        name.toStdString(),
-                        File{exec_name, std::filesystem::path(path.toStdString())}
-                    });
+                    temp_files.push_back(
+                        TempFile{name.toStdString(), File{exec_name, std::filesystem::path(path.toStdString())}});
                 }
             }
         }
@@ -97,31 +96,20 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
         QString name, description;
         for (const QString& line : block.split('\n'))
         {
-            if (line.startsWith("Name"))
-            {
-                name = line.section(':', 1).trimmed();
-            }
-            else if (line.startsWith("Description"))
-            {
-                description = line.section(':', 1).trimmed();
-            }
+            if (line.startsWith("Name")) { name = line.section(':', 1).trimmed(); }
+            else if (line.startsWith("Description")) { description = line.section(':', 1).trimmed(); }
         }
-        if (!name.isEmpty())
-        {
-            pkg_descriptions[name.toStdString()] = description.toStdString();
-        }
+        if (!name.isEmpty()) { pkg_descriptions[name.toStdString()] = description.toStdString(); }
     }
 
     // Now assign descriptions and add to files
     for (auto& temp : temp_files)
     {
-        if (pkg_descriptions.contains(temp.pkg_name))
-        {
-            temp.file.m_description = pkg_descriptions[temp.pkg_name];
-        }
+        if (pkg_descriptions.contains(temp.pkg_name)) { temp.file.m_description = pkg_descriptions[temp.pkg_name]; }
 
         if (!membership.contains(temp.file.m_name))
         {
+            temp.file.m_launch_type = LaunchType::TERMINAL;
             siv::ID id = files.push_back(temp.file);
             membership.emplace(temp.file.m_name, id);
         }

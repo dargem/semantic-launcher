@@ -20,10 +20,7 @@ public:
         IsTerminalRole
     };
 
-    int rowCount(const QModelIndex& = QModelIndex()) const override
-    {
-        return m_results.size();
-    }
+    int rowCount(const QModelIndex& = QModelIndex()) const override { return m_results.size(); }
     QVariant data(const QModelIndex& index, int role) const override;
     QHash<int, QByteArray> roleNames() const override;
 
@@ -31,10 +28,7 @@ public:
 
     Result get_result(int index) const
     {
-        if (index >= 0 && index < m_results.size())
-        {
-            return m_results[index];
-        }
+        if (index >= 0 && index < m_results.size()) { return m_results[index]; }
         return Result{};
     }
 
@@ -48,15 +42,12 @@ class SearchEngine : public QObject
     Q_PROPERTY(SearchResultModel* results READ results CONSTANT)
 public:
     explicit SearchEngine(Launcher launcher, QObject* parent = nullptr)
-        : m_model(), m_database(Embedder("models/" + configs::MODEL_NAME)), m_launcher(launcher) {};
+        : m_model(), m_database(Embedder(configs::resolve_model_path())), m_launcher(launcher) {};
 
     Q_INVOKABLE void search(const QString& query); // gets called from QML on every keystroke
     Q_INVOKABLE void launch(int index);            // gets called on Enter / click
 
-    SearchResultModel* results()
-    {
-        return &m_model;
-    }
+    SearchResultModel* results() { return &m_model; }
 
 private:
     SearchResultModel m_model;

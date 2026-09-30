@@ -20,8 +20,7 @@ Launcher::Launcher()
         }
     }
 
-    if (!m_terminal_name.empty())
-        return;
+    if (!m_terminal_name.empty()) return;
     throw std::runtime_error("No terminal found, check configs.hpp");
 }
 
@@ -40,8 +39,7 @@ void Launcher::launch(File& f) const
     case LaunchType::TERMINAL:
     {
         QString inner_cmd = program;
-        for (const QString& arg : arguments)
-            inner_cmd += " " + arg;
+        for (const QString& arg : arguments) inner_cmd += " " + arg;
         inner_cmd += "; exec bash";
 
         QStringList term_args = {"-e", "bash", "-c", inner_cmd};

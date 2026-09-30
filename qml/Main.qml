@@ -24,7 +24,21 @@ Window {
 
     Shortcut {
         sequence: "Escape"
-        onActivated: root.close()
+        onActivated: root.hide()
+    }
+
+    onVisibleChanged: {
+        if (visible) {
+            searchField.text = ""
+            searchEngine.search("")
+            searchField.forceActiveFocus()
+            resultsList.currentIndex = 0
+        }
+    }
+
+    onClosing: function(close) {
+        close.accepted = false
+        root.hide()
     }
 
     Rectangle {
@@ -52,9 +66,17 @@ Window {
                 background: null
                 focus: true
 
-                onTextChanged: searchEngine.search(text)
+                onTextChanged: {
+                    resultsList.currentIndex = 0
+                    searchEngine.search(text)
+                }
 
-                Keys.onReturnPressed: searchEngine.launch(resultsList.currentIndex)
+                Keys.onReturnPressed: {
+                    if (resultsList.count > 0 && resultsList.currentIndex >= 0) {
+                        searchEngine.launch(resultsList.currentIndex)
+                        root.hide()
+                    }
+                }
                 Keys.onDownPressed: resultsList.incrementCurrentIndex()
                 Keys.onUpPressed: resultsList.decrementCurrentIndex()
             }
@@ -84,6 +106,7 @@ Window {
                         onClicked: {
                             resultsList.currentIndex = index
                             searchEngine.launch(index)
+                            root.hide()
                         }
                     }
 

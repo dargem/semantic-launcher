@@ -8,12 +8,9 @@
 #include <QStandardPaths>
 #include <QTemporaryDir>
 
-bool AppImage::check_applicable() const
-{
-    return !QStandardPaths::findExecutable("find").isEmpty();
-}
+bool AppImage::check_applicable() const { return !QStandardPaths::findExecutable("find").isEmpty(); }
 
-void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID> membership) const
+void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::string, siv::ID>& membership) const
 {
     // find ~ -iname "*.appimage"
     QProcess find_process;
@@ -27,8 +24,7 @@ void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::strin
 
     for (const QString& appimage_path : appimage_paths)
     {
-        if (appimage_path.isEmpty())
-            continue;
+        if (appimage_path.isEmpty()) continue;
 
         QFileInfo appimage_info(appimage_path);
         std::string fallback_name = appimage_info.completeBaseName().toStdString();
@@ -58,10 +54,7 @@ void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::strin
                         {
                             auto entry_opt = DesktopUtils::load_entry(desktop_info);
                             processed = true;
-                            if (!entry_opt)
-                            {
-                                continue;
-                            }
+                            if (!entry_opt) { continue; }
                             const File& entry = *entry_opt;
                             std::string name = entry.m_name.empty() ? fallback_name : entry.m_name;
 
