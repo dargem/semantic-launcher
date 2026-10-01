@@ -5,16 +5,30 @@
 #include <QStringList>
 #include <iostream>
 
+namespace
+{
+std::string read_entry_string(const QSettings& settings, const QString& key)
+{
+    const QVariant val = settings.value(key);
+    if (val.typeId() == QMetaType::QStringList)
+    {
+        // QSettings parses unquoted commas as list delimiters
+        return val.toStringList().join(", ").toStdString();
+    }
+    return val.toString().toStdString();
+}
+} // namespace
+
 std::optional<File> DesktopUtils::load_entry(const QFileInfo& desktop_file)
 {
     QSettings file(desktop_file.filePath(), QSettings::IniFormat);
     file.beginGroup("Desktop Entry");
 
     // Get our file, need to consider its already in files
-    const std::string name = file.value("Name").toString().toStdString();
-    const std::string comment = file.value("Comment").toString().toStdString();
-    const std::string exec = file.value("Exec").toString().toStdString();
-    const std::string icon = file.value("Icon").toString().toStdString();
+    const std::string name = read_entry_string(file, "Name");
+    const std::string comment = read_entry_string(file, "Comment");
+    const std::string exec = read_entry_string(file, "Exec");
+    const std::string icon = read_entry_string(file, "Icon");
     const bool no_display = file.value("NoDisplay").toBool();
     const bool appstream_ignore = file.value("X-AppStream-Ignore").toBool();
 
