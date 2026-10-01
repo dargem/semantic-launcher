@@ -9,7 +9,6 @@
 #include <csignal>
 #include <iostream>
 #include <optional>
-#include <string_view>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -87,7 +86,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    // 1. Client mode (toggle, show, hide, quit, status)
+    // Client mode (toggle, show, hide, quit, status)
     if (command.has_value() && *command != ipc::Command::Daemon)
     {
         QString response;
@@ -101,21 +100,18 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // 2. If launched without args and daemon is already running, toggle it
+    // If launched without args and daemon is already running, toggle it
     if (!command.has_value())
     {
         QString response;
-        if (ipc::send_command(ipc::Command::Ping, &response, 200))
+        if (ipc::send_command(ipc::Command::Toggle, &response, 1000))
         {
-            if (ipc::send_command(ipc::Command::Toggle, &response, 1000))
-            {
-                std::cout << response.toStdString() << "\n";
-                return 0;
-            }
+            std::cout << response.toStdString() << "\n";
+            return 0;
         }
     }
 
-    // 3. Daemon / Foreground mode
+    // Daemon / Foreground mode
     try
     {
         qputenv("QT_QPA_PLATFORM", "wayland");

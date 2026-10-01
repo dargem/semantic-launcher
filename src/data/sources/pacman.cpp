@@ -28,8 +28,8 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
 
     struct TempFile
     {
-        std::string pkg_name;
-        File file;
+        std::string m_pkg_name;
+        File m_file;
     };
 
     std::vector<TempFile> temp_files;
@@ -76,10 +76,10 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
     std::unordered_set<std::string> unique_pkgs;
     for (auto& temp : temp_files)
     {
-        if (!unique_pkgs.contains(temp.pkg_name))
+        if (!unique_pkgs.contains(temp.m_pkg_name))
         {
-            unique_pkgs.insert(temp.pkg_name);
-            unique_pkg_names += QString::fromStdString(temp.pkg_name);
+            unique_pkgs.insert(temp.m_pkg_name);
+            unique_pkg_names += QString::fromStdString(temp.m_pkg_name);
         }
     }
 
@@ -105,13 +105,23 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
     // Now assign descriptions and add to files
     for (auto& temp : temp_files)
     {
-        if (pkg_descriptions.contains(temp.pkg_name)) { temp.file.m_description = pkg_descriptions[temp.pkg_name]; }
+        if (pkg_descriptions.contains(temp.m_pkg_name)) { temp.m_file.m_description = pkg_descriptions[temp.m_pkg_name]; }
 
-        if (!membership.contains(temp.file.m_name))
+        if (auto match = find_membership(membership, temp.m_file))
         {
-            temp.file.m_launch_type = LaunchType::TERMINAL;
-            siv::ID id = files.push_back(temp.file);
-            membership.emplace(temp.file.m_name, id);
+            siv::ID id = *match;
+            File& file = files[id];
+            if (file.m_description.empty() && !temp.m_file.m_description.empty())
+            {
+                file.m_description = temp.m_file.m_description;
+            }
+            register_membership(membership, file, id);
+        }
+        else
+        {
+            temp.m_file.m_launch_type = LaunchType::TERMINAL;
+            siv::ID id = files.push_back(temp.m_file);
+            register_membership(membership, temp.m_file, id);
         }
     }
 }

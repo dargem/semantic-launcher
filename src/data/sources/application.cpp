@@ -47,10 +47,10 @@ void Application::aggregate(siv::Vector<File>& files, std::unordered_map<std::st
         if (!entry_opt) { continue; }
         const File& entry = *entry_opt;
 
-        if (membership.contains(entry.m_name))
+        if (auto match = find_membership(membership, entry))
         {
             // We will do an overwrite as desktop is high priority
-            siv::ID id = membership[entry.m_name];
+            siv::ID id = *match;
             File& file = files[id];
 
             file.m_name = entry.m_name;
@@ -59,11 +59,12 @@ void Application::aggregate(siv::Vector<File>& files, std::unordered_map<std::st
             file.m_args = entry.m_args;
             file.m_icon = entry.m_icon;
             file.m_launch_type = entry.m_launch_type;
+            register_membership(membership, file, id);
             continue;
         }
 
         // Make a new entry else-wise
         siv::ID id = files.push_back(entry);
-        membership.emplace(entry.m_name, id);
+        register_membership(membership, entry, id);
     }
 }

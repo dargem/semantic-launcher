@@ -58,15 +58,22 @@ void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::strin
                             const File& entry = *entry_opt;
                             std::string name = entry.m_name.empty() ? fallback_name : entry.m_name;
 
-                            if (!membership.contains(name))
+                            File file{name,
+                                      std::filesystem::path(appimage_path.toStdString()),
+                                      entry.m_args,
+                                      entry.m_description,
+                                      entry.m_launch_type,
+                                      entry.m_icon};
+
+                            if (auto match = find_membership(membership, file))
                             {
-                                siv::ID id = files.push_back(File{name,
-                                                                  std::filesystem::path(appimage_path.toStdString()),
-                                                                  entry.m_args,
-                                                                  entry.m_description,
-                                                                  entry.m_launch_type,
-                                                                  entry.m_icon});
-                                membership.emplace(name, id);
+                                siv::ID id = *match;
+                                register_membership(membership, file, id);
+                            }
+                            else
+                            {
+                                siv::ID id = files.push_back(file);
+                                register_membership(membership, file, id);
                             }
                         }
                     }
@@ -76,15 +83,22 @@ void AppImage::aggregate(siv::Vector<File>& files, std::unordered_map<std::strin
 
         if (!processed)
         {
-            if (!membership.contains(fallback_name))
+            File file{fallback_name,
+                      std::filesystem::path(appimage_path.toStdString()),
+                      "",
+                      "AppImage Application",
+                      LaunchType::DIRECT,
+                      std::nullopt};
+
+            if (auto match = find_membership(membership, file))
             {
-                siv::ID id = files.push_back(File{fallback_name,
-                                                  std::filesystem::path(appimage_path.toStdString()),
-                                                  "",
-                                                  "AppImage Application",
-                                                  LaunchType::DIRECT,
-                                                  std::nullopt});
-                membership.emplace(fallback_name, id);
+                siv::ID id = *match;
+                register_membership(membership, file, id);
+            }
+            else
+            {
+                siv::ID id = files.push_back(file);
+                register_membership(membership, file, id);
             }
         }
     }
