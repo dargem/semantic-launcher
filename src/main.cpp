@@ -117,6 +117,7 @@ int main(int argc, char* argv[])
         qputenv("QT_WAYLAND_SHELL_INTEGRATION", "layer-shell");
 
         QGuiApplication app(argc, argv);
+        QGuiApplication::setApplicationName("semantic-launcher");
         QGuiApplication::setQuitOnLastWindowClosed(false);
 
         std::cout << "[daemon] Indexing applications..." << std::endl;

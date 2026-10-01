@@ -3,6 +3,7 @@
 #include "src/data/sources/appimage.hpp"
 #include "src/data/sources/application.hpp"
 #include "src/data/sources/i_aggregate.hpp"
+#include <QCoreApplication>
 #include <QStandardPaths>
 #include <cstdlib>
 #include <filesystem>
@@ -29,15 +30,37 @@ inline std::string resolve_model_path(const std::string& name = MODEL_NAME)
         if (std::filesystem::exists(env)) return env;
     }
 
-    for (const auto& dir :
-         {std::filesystem::current_path() / "models",
-          std::filesystem::current_path(),
-          std::filesystem::path("/usr/share/semantic-launcher/models"),
-          std::filesystem::path(QStandardPaths::writableLocation(QStandardPaths::AppDataLocation).toStdString()) /
-              "models"})
+    std::vector<std::filesystem::path> search_dirs = {
+        std::filesystem::current_path() / "models",
+        std::filesystem::current_path(),
+    };
+
+    // Check directory relative to the running binary (e.g. build dir or install prefix)
+    QString app_dir = QCoreApplication::applicationDirPath();
+    if (!app_dir.isEmpty())
     {
+        std::filesystem::path bin_dir = app_dir.toStdString();
+        search_dirs.push_back(bin_dir / "models");
+        search_dirs.push_back(bin_dir / ".." / "models");
+        search_dirs.push_back(bin_dir / ".." / "share" / "semantic-launcher" / "models");
+    }
+
+    // Standard system & user data locations (e.g. ~/.local/share/semantic-launcher/models,
+    // /usr/share/semantic-launcher/models)
+    for (const auto& loc : QStandardPaths::standardLocations(QStandardPaths::AppDataLocation))
+    {
+        search_dirs.push_back(std::filesystem::path(loc.toStdString()) / "models");
+        search_dirs.push_back(std::filesystem::path(loc.toStdString()));
+    }
+
+    search_dirs.push_back(std::filesystem::path("/usr/local/share/semantic-launcher/models"));
+    search_dirs.push_back(std::filesystem::path("/usr/share/semantic-launcher/models"));
+
+    for (const auto& dir : search_dirs)
+    {
+        std::error_code ec;
         auto path = dir / name;
-        if (std::filesystem::exists(path)) return path.string();
+        if (std::filesystem::exists(path, ec)) return path.lexically_normal().string();
     }
     return "models/" + name;
 }

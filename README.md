@@ -38,7 +38,7 @@ Download a GGUF embedding model and place it in the `models/` directory:
 
 ```bash
 mkdir -p models
-# Example: Download a small, fast embedding model
+# Example, this is a small, fast embedding model
 wget -O models/model.gguf https://huggingface.co/second-state/BGE-Micro-v2-GGUF/resolve/main/bge-micro-v2-Q8_0.gguf
 ```
 
@@ -97,21 +97,26 @@ systemctl --user enable --now semantic-launcher.service
 
 > **Note**: If `semantic-launcher` is installed in a custom directory (e.g. `~/.local/bin` or your build path), adjust `ExecStart` in `~/.config/systemd/user/semantic-launcher.service`.
 
-#### 3. Hyprland Configuration (`hyprland.conf`)
+#### 3. Hyprland Configuration (`hyprland.lua`)
 
-Add the following to your `hyprland.conf`:
+Add the following to your `hyprland.lua`:
 
-```hyprlang
-# Keybinding to toggle the launcher
-bind = $mainMod, SPACE, exec, semantic-launcher --toggle
+```lua
+-- Keybinding to toggle the launcher
+hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("semantic-launcher --toggle"))
 
-# (Optional) If not using systemd, start the daemon with Hyprland:
-# exec-once = semantic-launcher --daemon
+-- (Optional) If not using systemd, start the daemon with Hyprland:
+-- hl.on("hyprland.start", function()
+--     hl.exec_cmd("semantic-launcher --daemon")
+-- end)
 
-# (Optional) Layer rules for blur and smooth animations
-layerrule = blur, semantic-launcher
-layerrule = ignorealpha 0.5, semantic-launcher
-layerrule = animation popin 80%, semantic-launcher
+-- (Optional) Layer rules for blur and smooth animations
+hl.layer_rule({
+    match = { namespace = "semantic-launcher" },
+    blur = true,
+    ignore_alpha = 0.5,
+    animation = "popin 80%",
+})
 ```
 
 ## Caveats
