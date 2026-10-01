@@ -105,7 +105,10 @@ void Pacman::aggregate(siv::Vector<File>& files, std::unordered_map<std::string,
     // Now assign descriptions and add to files
     for (auto& temp : temp_files)
     {
-        if (pkg_descriptions.contains(temp.m_pkg_name)) { temp.m_file.m_description = pkg_descriptions[temp.m_pkg_name]; }
+        if (pkg_descriptions.contains(temp.m_pkg_name))
+        {
+            temp.m_file.m_description = pkg_descriptions[temp.m_pkg_name];
+        }
 
         if (auto match = find_membership(membership, temp.m_file))
         {

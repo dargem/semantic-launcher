@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  format:
+    name: Check Formatting
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          pacman -Sy --noconfirm --needed clang
+
+      - name: Check clang-format
+        run: |
+          find src -type f \( -name "*.cpp" -o -name "*.hpp" \) -exec clang-format --dry-run --Werror {} +
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          pacman -Sy --noconfirm --needed \
+            base-devel \
+            git \
+            cmake \
+            ninja \
+            qt6-base \
+            qt6-declarative \
+            layer-shell-qt \
+            man-db
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compile
+        run: |
+          cmake --build build --target semantic-launcher

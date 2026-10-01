@@ -36,8 +36,7 @@ static void setup_signals(QObject* parent, std::function<void()> on_toggle)
                          if (::read(sig_fd[1], &sig, sizeof(sig)) > 0)
                          {
                              if (sig == SIGUSR1) on_toggle();
-                             else if (sig == SIGINT || sig == SIGTERM)
-                                 QGuiApplication::quit();
+                             else if (sig == SIGINT || sig == SIGTERM) QGuiApplication::quit();
                          }
                      });
 
@@ -170,8 +169,7 @@ int main(int argc, char* argv[])
         auto toggle_launcher = [&]()
         {
             if (window->isVisible()) hide_launcher();
-            else
-                show_launcher();
+            else show_launcher();
         };
 
         ipc::Server server(
