@@ -1,5 +1,4 @@
 #pragma once
-#include "src/configs.hpp"
 #include "src/data/database.hpp"
 #include "src/data/result.hpp"
 #include "src/launcher/launcher.hpp"
@@ -41,8 +40,7 @@ class SearchEngine : public QObject
     Q_OBJECT
     Q_PROPERTY(SearchResultModel* results READ results CONSTANT)
 public:
-    explicit SearchEngine(Launcher launcher, QObject* parent = nullptr)
-        : m_model(), m_database(Embedder(configs::resolve_model_path())), m_launcher(launcher) {};
+    explicit SearchEngine(Launcher launcher, QObject* parent = nullptr);
 
     Q_INVOKABLE void search(const QString& query); // gets called from QML on every keystroke
     Q_INVOKABLE void launch(int index);            // gets called on Enter / click

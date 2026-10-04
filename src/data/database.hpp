@@ -1,36 +1,27 @@
 #pragma once
 
 #include "src/data/result.hpp"
-#include "src/embedder/embedder.hpp"
+#include "src/ranker/i_ranker.hpp"
 #include "src/utils/index_vector.hpp"
 #include <cassert>
 #include <cstddef>
+#include <memory>
 #include <string_view>
 #include <unordered_map>
-#include <usearch/index.hpp>
-#include <usearch/index_dense.hpp>
 #include <vector>
 
-// Manages searchable files and provides
-// Should be templated with the number of dimensions the embedding model has
+// Manages searchable files and rankers
 class Database
 {
 public:
-    Database(Embedder embedder);
+    explicit Database(std::vector<std::unique_ptr<IRanker>> rankers);
 
-    // Uses exact / fuzzy match to get best n results, result size is <= n, sorted by strength
-    // Strength is [0, 1] and no result will be < than cutoff
-    std::vector<Result> get_match_best(std::string_view query, size_t n, double cut_off = 0.0) const;
-
-    // Uses semantic search to get best n results, result size is <= n, sorted by strength
-    // Strength is [0, 1] and no results will be < than cutoff
-    std::vector<Result> get_semantic_best(std::string_view query, size_t n, double cut_off = 0.0) const;
+    // Queries all managed rankers to get the best n results, merged, deduplicated, and sorted by score
+    std::vector<Result> get_best(std::string_view query, size_t n, double cut_off = 0.0) const;
 
 private:
-    Embedder m_embedder;
-
-    // Possibly replace this with my own solution later?
-    unum::usearch::index_dense_t m_vector_db;
+    // Managed rankers
+    std::vector<std::unique_ptr<IRanker>> m_rankers;
 
     // Sparse set of files
     siv::Vector<File> m_files;

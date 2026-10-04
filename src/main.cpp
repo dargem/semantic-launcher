@@ -3,6 +3,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QSocketNotifier>
+#include <QTimer>
 #include <QWindow>
 #include <QtCore/qglobal.h>
 
@@ -143,7 +144,7 @@ int main(int argc, char* argv[])
         layer_shell->setExclusiveEdge(LayerShellQt::Window::AnchorTop);
         layer_shell->setDesiredSize(window->size());
         layer_shell->setExclusiveZone(0);
-        layer_shell->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityOnDemand);
+        layer_shell->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityExclusive);
         layer_shell->setScope(QStringLiteral("semantic-launcher"));
         layer_shell->setWantsToBeOnActiveScreen(true);
         layer_shell->setActivateOnShow(true);
@@ -157,15 +158,55 @@ int main(int argc, char* argv[])
                          window,
                          [window, layer_shell]() { layer_shell->setDesiredSize(window->size()); });
 
+        // Once the window gains focus after being mapped in Exclusive mode,
+        // drop interactivity to OnDemand so users can click away to other apps.
+        QObject::connect(window,
+                         &QWindow::activeChanged,
+                         window,
+                         [window, layer_shell]()
+                         {
+                             if (window->isActive())
+                             {
+                                 QTimer::singleShot(0,
+                                                    window,
+                                                    [window, layer_shell]()
+                                                    {
+                                                        if (window->isVisible() && window->isActive())
+                                                        {
+                                                            layer_shell->setKeyboardInteractivity(
+                                                                LayerShellQt::Window::KeyboardInteractivityOnDemand);
+                                                        }
+                                                    });
+                             }
+                         });
+
         auto show_launcher = [window, layer_shell]()
         {
+            layer_shell->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityExclusive);
             layer_shell->setWantsToBeOnActiveScreen(true);
             window->show();
             window->raise();
             window->requestActivate();
+            if (window->isActive())
+            {
+                QTimer::singleShot(50,
+                                   window,
+                                   [window, layer_shell]()
+                                   {
+                                       if (window->isVisible() && window->isActive())
+                                       {
+                                           layer_shell->setKeyboardInteractivity(
+                                               LayerShellQt::Window::KeyboardInteractivityOnDemand);
+                                       }
+                                   });
+            }
         };
 
-        auto hide_launcher = [window]() { window->hide(); };
+        auto hide_launcher = [window, layer_shell]()
+        {
+            window->hide();
+            layer_shell->setKeyboardInteractivity(LayerShellQt::Window::KeyboardInteractivityExclusive);
+        };
 
         auto toggle_launcher = [&]()
         {

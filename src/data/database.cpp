@@ -1,18 +1,11 @@
-#include <rapidfuzz/rapidfuzz_all.hpp>
-
-#include "rapidfuzz/fuzz.hpp"
-#include "src/configs.hpp"
 #include "src/data/database.hpp"
 
-using unum::usearch::index_dense_t;
-using unum::usearch::metric_kind_t;
-using unum::usearch::metric_punned_t;
-using unum::usearch::scalar_kind_t;
+#include "src/configs.hpp"
+#include <algorithm>
+#include <unordered_map>
 
-Database::Database(Embedder embedder)
-    : m_embedder(embedder),
-      m_vector_db(index_dense_t::make(
-          metric_punned_t(embedder.get_dimensionality(), metric_kind_t::l2sq_k, scalar_kind_t::f32_k)))
+// No rankers should be null
+Database::Database(std::vector<std::unique_ptr<IRanker>> rankers) : m_rankers(std::move(rankers))
 {
     for (const auto& aggregator : configs::AGGREGATORS)
     {
@@ -20,102 +13,48 @@ Database::Database(Embedder embedder)
         aggregator->aggregate(m_files, m_file_membership);
     }
 
-    m_vector_db.reserve(m_files.size());
-    for (size_t i{}; i < m_files.size(); ++i)
-    {
-        // We want to use our stable indexes as keys for our embedding db
-        siv::ID key = m_files.createHandleFromData(i).getID();
-        File& file = m_files[key];
-
-        // Consider also embedding name in future
-        if (file.m_description.empty())
-        {
-            continue; // Skip if this file has no description
-        }
-        std::vector<float> embeddings = embedder.embed(file.m_description); // Is normalized
-
-        m_vector_db.add(key, embeddings.data());
-    }
-};
-
-std::vector<Result> Database::get_semantic_best(std::string_view query, size_t num, double cut_off) const
-{
-    auto embedding = m_embedder.embed(query);
-    auto results = m_vector_db.search(embedding.data(), num);
-
-    std::vector<Result> out;
-    out.reserve(results.size());
-
-    for (size_t i{}; i < results.size(); ++i)
-    {
-        const int key = results[i].member.key;
-        const float score = 1.0f / (1.0f + results[i].distance);
-        if (score >= cut_off) { out.push_back(Result{m_files[key], score}); }
-    }
-
-    std::sort(out.begin(), out.end(), [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
-
-    return out;
+    for (auto& ranker : m_rankers) { ranker->build_index(m_files); }
 }
 
-// Use a fuzzy string match
-std::vector<Result> Database::get_match_best(std::string_view query, size_t n, double cut_off) const
+std::vector<Result> Database::get_best(std::string_view query, size_t n, double cut_off) const
 {
-    // The partial ratio scorer does not care about lengths which can be good
-    // e.g. search for first word of a 5 word app it size dif should not disregard it
-    rapidfuzz::fuzz::CachedPartialRatio<char> scorer(query);
+    if (query.empty() || n == 0) { return {}; }
 
-    // But there is issue if the query is very short its easily 100%
-    rapidfuzz::fuzz::CachedRatio<char> exact_scorer(query);
-
-    std::vector<Result> best_n;
-    best_n.reserve(n); // May not use n in case < n results to match
-
-    auto eval = [&](std::string_view opt) -> double
+    std::vector<Result> all_results;
+    for (const auto& ranker : m_rankers)
     {
-        if (opt.size() <= configs::EXACT_MATCH_SIZE_CUTOFF || query.size() <= configs::EXACT_MATCH_SIZE_CUTOFF)
-        {
-            // we use an exact match
-            if (opt == query) return 1.0;
-            if (opt.starts_with(query)) return 0.9;
-            // Can do a contains if wanted as well
-            return 0.0;
-        }
-
-        return scorer.similarity(opt) / 100.0; // Normalize
-    };
-
-    for (auto option : m_files)
-    {
-        std::string_view opt = option.m_name;
-
-        if (opt.size() + 1 < query.size())
-        {
-            // If the query is a lot larger than option size probably not correct
-            continue;
-        }
-
-        double score = eval(opt);
-
-        if (score < cut_off) continue;
-
-        if (best_n.size() < n)
-        {
-            best_n.push_back(Result(option, score));
-            continue;
-        }
-
-        auto worst_it =
-            std::min_element(best_n.begin(), best_n.end(), [](Result& a, Result& b) { return a.m_score < b.m_score; });
-
-        if (worst_it->m_score < score)
-        {
-            // Do a replacement
-            worst_it->m_score = score;
-            worst_it->m_file = option;
-        }
+        auto ranker_results = ranker->get_best(query, n, cut_off);
+        all_results.append_range(std::move(ranker_results));
     }
 
-    std::sort(best_n.begin(), best_n.end(), [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
-    return best_n;
+    // Deduplicate results by file name, keeping the highest score
+    std::unordered_map<std::string, Result> merged_results;
+    merged_results.reserve(all_results.size());
+
+    for (const auto& result : all_results)
+    {
+        const auto& key = result.m_file.m_name;
+        auto [it, inserted] = merged_results.try_emplace(key, result);
+        if (!inserted && it->second.m_score < result.m_score) { it->second = result; }
+    }
+
+    std::vector<Result> ranked_results;
+    ranked_results.reserve(merged_results.size());
+    for (auto& [_, result] : merged_results) { ranked_results.push_back(std::move(result)); }
+
+    std::sort(ranked_results.begin(),
+              ranked_results.end(),
+              [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
+
+    if (cut_off > 0.0)
+    {
+        ranked_results.erase(std::remove_if(ranked_results.begin(),
+                                            ranked_results.end(),
+                                            [cut_off](const Result& result) { return result.m_score < cut_off; }),
+                             ranked_results.end());
+    }
+
+    if (ranked_results.size() > n) { ranked_results.resize(n); }
+
+    return ranked_results;
 }

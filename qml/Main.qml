@@ -27,6 +27,12 @@ Window {
         onActivated: root.hide()
     }
 
+    onActiveChanged: {
+        if (active) {
+            searchField.forceActiveFocus()
+        }
+    }
+
     onVisibleChanged: {
         if (visible) {
             searchField.text = ""
@@ -77,6 +83,7 @@ Window {
                         root.hide()
                     }
                 }
+                Keys.onEscapePressed: root.hide()
                 Keys.onDownPressed: resultsList.incrementCurrentIndex()
                 Keys.onUpPressed: resultsList.decrementCurrentIndex()
             }

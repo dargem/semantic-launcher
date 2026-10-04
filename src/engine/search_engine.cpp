@@ -1,12 +1,31 @@
 #include "src/engine/search_engine.hpp"
+#include "src/configs.hpp"
+#include "src/ranker/fuzzy_ranker.hpp"
+#include "src/ranker/semantic_ranker.hpp"
 #include <QProcess>
 #include <QString>
 #include <fcntl.h>
+#include <memory>
 #include <stdexcept>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <unordered_map>
+#include <vector>
+
+SearchEngine::SearchEngine(Launcher launcher, QObject* parent)
+    : QObject(parent),
+      m_model(),
+      m_database(
+          []
+          {
+              std::vector<std::unique_ptr<IRanker>> rankers;
+              rankers.push_back(std::make_unique<FuzzyRanker>());
+              rankers.push_back(std::make_unique<SemanticRanker>(Embedder(configs::resolve_model_path())));
+              return rankers;
+          }()),
+      m_launcher(launcher)
+{
+}
 
 QVariant SearchResultModel::data(const QModelIndex& index, int role) const
 {
@@ -67,35 +86,15 @@ void SearchResultModel::set_results(const QList<Result>& results)
 
 Q_INVOKABLE void SearchEngine::search(const QString& query)
 {
-    if (query.size() == 0)
+    if (query.isEmpty())
     {
         m_model.set_results(QList<Result>());
         return;
     }
 
-    auto results = m_database.get_match_best(query.toStdString(), 3, 0.4);
-    results.append_range(m_database.get_semantic_best(query.toStdString(), 3, 0.3));
+    auto results = m_database.get_best(query.toStdString(), 5, 0.3);
 
-    // need to dedup results
-    std::unordered_map<std::string, Result> merged_results;
-    merged_results.reserve(results.size());
-
-    for (const auto& result : results)
-    {
-        const auto key = result.m_file.m_name;
-        auto [it, inserted] = merged_results.try_emplace(key, result);
-        if (!inserted && it->second.m_score < result.m_score) { it->second = result; }
-    }
-
-    std::vector<Result> ranked_results;
-    ranked_results.reserve(merged_results.size());
-    for (auto& [_, result] : merged_results) { ranked_results.push_back(result); }
-
-    std::sort(ranked_results.begin(),
-              ranked_results.end(),
-              [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
-
-    m_model.set_results(QList<Result>(ranked_results.begin(), ranked_results.end()));
+    m_model.set_results(QList<Result>(results.begin(), results.end()));
 }
 
 // Launching result of that index
