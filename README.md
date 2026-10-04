@@ -84,31 +84,18 @@ Running as a background daemon indexes all applications and models on startup on
 - `semantic-launcher --quit` (or `-q`): Gracefully stops the daemon.
 - `pkill -USR1 semantic-launcher`: Toggles the launcher via POSIX signal.
 
-#### 2. Systemd User Service Setup
+#### 2. Hyprland Configuration (`hyprland.lua`)
 
-Copy the service file to your systemd user configuration directory:
-
-```bash
-mkdir -p ~/.config/systemd/user
-cp semantic-launcher.service ~/.config/systemd/user/
-systemctl --user daemon-reload
-systemctl --user enable --now semantic-launcher.service
-```
-
-> **Note**: If `semantic-launcher` is installed in a custom directory (e.g. `~/.local/bin` or your build path), adjust `ExecStart` in `~/.config/systemd/user/semantic-launcher.service`.
-
-#### 3. Hyprland Configuration (`hyprland.lua`)
-
-Add the following to your `hyprland.lua`:
+Add the following to your `hyprland.lua` to launch the daemon on startup and configure the toggle keybinding:
 
 ```lua
 -- Keybinding to toggle the launcher
 hl.bind(mainMod .. " + SPACE", hl.dsp.exec_cmd("semantic-launcher --toggle"))
 
--- (Optional) If not using systemd, start the daemon with Hyprland:
--- hl.on("hyprland.start", function()
---     hl.exec_cmd("semantic-launcher --daemon")
--- end)
+-- Have Hyprland launch the daemon on startup
+hl.on("hyprland.start", function()
+    hl.exec_cmd("semantic-launcher --daemon")
+end)
 
 -- (Optional) Layer rules for blur and smooth animations
 hl.layer_rule({
