@@ -51,6 +51,7 @@ qt_add_executable(semantic-launcher
     src/daemon/ipc.cpp
     src/ranker/fuzzy_ranker.cpp
     src/ranker/semantic_ranker.cpp
+    src/ranker/fuzzy_desc_ranker.cpp
 )
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

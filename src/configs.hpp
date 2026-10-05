@@ -75,8 +75,8 @@ inline auto const AGGREGATORS = []
 }();
 
 // CombSUM weights for rankers
-inline constexpr double FUZZY_WEIGHT = 0.6;
-inline constexpr double SEMANTIC_WEIGHT = 0.4;
+inline constexpr double FUZZY_WEIGHT = 0.4;
+inline constexpr double SEMANTIC_WEIGHT = 0.8;
 
 // The terminals to check for on startup, if your terminal is not here it will not "see" it
 // Earlier on the list == higher preference, if an undesired terminal is being used reorder it,

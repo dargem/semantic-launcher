@@ -1,13 +1,12 @@
-#include "src/ranker/fuzzy_ranker.hpp"
-
-#include "src/configs.hpp"
-#include <algorithm>
+#include "src/ranker/fuzzy_desc_ranker.hpp"
 #include <rapidfuzz/fuzz.hpp>
 #include <rapidfuzz/rapidfuzz_all.hpp>
+#include <src/configs.hpp>
 
-void FuzzyRanker::build_index(siv::Vector<File>& files) { m_files = &files; }
+// Should change this to be a keyword match with more thought...
+void FuzzyDescRanker::build_index(siv::Vector<File>& files) { m_files = &files; }
 
-std::vector<Result> FuzzyRanker::get_best(std::string_view query, size_t n) const
+std::vector<Result> FuzzyDescRanker::get_best(std::string_view query, size_t n) const
 {
     if (query.empty() || n == 0) { return {}; }
 
@@ -31,9 +30,7 @@ std::vector<Result> FuzzyRanker::get_best(std::string_view query, size_t n) cons
 
     for (const auto& option : *m_files)
     {
-        std::string_view opt = option.m_name;
-
-        if (opt.size() + 1 < query.size()) { continue; }
+        std::string_view opt = option.m_description;
 
         double score = eval(opt);
 

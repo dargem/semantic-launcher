@@ -1,5 +1,6 @@
 #include "src/engine/search_engine.hpp"
 #include "src/configs.hpp"
+#include "src/ranker/fuzzy_desc_ranker.hpp"
 #include "src/ranker/fuzzy_ranker.hpp"
 #include "src/ranker/semantic_ranker.hpp"
 #include <QProcess>
@@ -22,6 +23,7 @@ SearchEngine::SearchEngine(Launcher launcher, QObject* parent)
               rankers.push_back({std::make_unique<FuzzyRanker>(), configs::FUZZY_WEIGHT});
               rankers.push_back({std::make_unique<SemanticRanker>(Embedder(configs::resolve_model_path())),
                                  configs::SEMANTIC_WEIGHT});
+              rankers.push_back({std::make_unique<FuzzyDescRanker>(), configs::FUZZY_WEIGHT});
               return rankers;
           }()),
       m_launcher(launcher)
