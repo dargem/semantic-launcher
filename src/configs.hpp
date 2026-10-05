@@ -74,12 +74,9 @@ inline auto const AGGREGATORS = []
     return agg;
 }();
 
-// Search uses the top K of a search type given they are above the score
-inline constexpr size_t SEMANTIC_ACCEPTED_K = 3;
-inline constexpr double SEMANTIC_ACCEPTED_SCORE = 0.5;
-
-inline constexpr size_t FUZZY_ACCEPTED_K = 3;
-inline constexpr double FUZZY_ACCEPTED_SCORE = 0.6;
+// CombSUM weights for rankers
+inline constexpr double FUZZY_WEIGHT = 0.6;
+inline constexpr double SEMANTIC_WEIGHT = 0.4;
 
 // The terminals to check for on startup, if your terminal is not here it will not "see" it
 // Earlier on the list == higher preference, if an undesired terminal is being used reorder it,

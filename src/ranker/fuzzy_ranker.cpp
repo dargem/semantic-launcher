@@ -7,7 +7,7 @@
 
 void FuzzyRanker::build_index(siv::Vector<File>& files) { m_files = &files; }
 
-std::vector<Result> FuzzyRanker::get_best(std::string_view query, size_t n, double cut_off) const
+std::vector<Result> FuzzyRanker::get_best(std::string_view query, size_t n) const
 {
     if (!m_files || query.empty() || n == 0) { return {}; }
 
@@ -37,7 +37,7 @@ std::vector<Result> FuzzyRanker::get_best(std::string_view query, size_t n, doub
 
         double score = eval(opt);
 
-        if (score < cut_off) continue;
+        if (score <= 0.0) continue;
 
         if (best_n.size() < n)
         {

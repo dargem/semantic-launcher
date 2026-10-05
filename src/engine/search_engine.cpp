@@ -18,9 +18,10 @@ SearchEngine::SearchEngine(Launcher launcher, QObject* parent)
       m_database(
           []
           {
-              std::vector<std::unique_ptr<IRanker>> rankers;
-              rankers.push_back(std::make_unique<FuzzyRanker>());
-              rankers.push_back(std::make_unique<SemanticRanker>(Embedder(configs::resolve_model_path())));
+              std::vector<Database::WeightedRanker> rankers;
+              rankers.push_back({std::make_unique<FuzzyRanker>(), configs::FUZZY_WEIGHT});
+              rankers.push_back({std::make_unique<SemanticRanker>(Embedder(configs::resolve_model_path())),
+                                 configs::SEMANTIC_WEIGHT});
               return rankers;
           }()),
       m_launcher(launcher)
@@ -92,7 +93,7 @@ Q_INVOKABLE void SearchEngine::search(const QString& query)
         return;
     }
 
-    auto results = m_database.get_best(query.toStdString(), 5, 0.3);
+    auto results = m_database.get_best(query.toStdString(), 50);
 
     m_model.set_results(QList<Result>(results.begin(), results.end()));
 }

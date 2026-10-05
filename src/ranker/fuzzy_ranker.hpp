@@ -10,7 +10,7 @@ public:
 
     void build_index(siv::Vector<File>& files) override;
 
-    std::vector<Result> get_best(std::string_view query, size_t n, double cut_off = 0.0) const override;
+    std::vector<Result> get_best(std::string_view query, size_t n) const override;
 
 private:
     const siv::Vector<File>* m_files{nullptr};

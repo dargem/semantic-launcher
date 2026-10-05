@@ -31,7 +31,7 @@ void SemanticRanker::build_index(siv::Vector<File>& files)
     }
 }
 
-std::vector<Result> SemanticRanker::get_best(std::string_view query, size_t n, double cut_off) const
+std::vector<Result> SemanticRanker::get_best(std::string_view query, size_t n) const
 {
     if (!m_files || query.empty() || n == 0 || m_vector_db.size() == 0) { return {}; }
 
@@ -45,7 +45,7 @@ std::vector<Result> SemanticRanker::get_best(std::string_view query, size_t n, d
     {
         const auto key = static_cast<siv::ID>(results[i].member.key);
         const float score = 1.0f / (1.0f + results[i].distance);
-        if (score >= cut_off) { out.push_back(Result{(*m_files)[key], score}); }
+        out.push_back(Result{(*m_files)[key], score});
     }
 
     std::sort(out.begin(), out.end(), [](const Result& a, const Result& b) { return a.m_score > b.m_score; });
