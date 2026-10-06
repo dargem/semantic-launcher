@@ -10,7 +10,7 @@ std::vector<Result> FuzzyDescRanker::get_best(std::string_view query, size_t n) 
 {
     if (query.empty() || n == 0) { return {}; }
 
-    rapidfuzz::fuzz::CachedPartialRatio<char> scorer(query);
+    rapidfuzz::fuzz::CachedTokenSetRatio<char> scorer(query);
     rapidfuzz::fuzz::CachedRatio<char> exact_scorer(query);
 
     std::vector<Result> best_n;
