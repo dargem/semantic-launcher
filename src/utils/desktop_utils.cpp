@@ -26,7 +26,9 @@ std::optional<File> DesktopUtils::load_entry(const QFileInfo& desktop_file)
 
     // Get our file, need to consider its already in files
     const std::string name = read_entry_string(file, "Name");
-    const std::string comment = read_entry_string(file, "Comment");
+    std::string comment = read_entry_string(file, "Comment");
+    if (comment == "Play this game on Steam") comment = ""; // Steam sets description as this default texts
+
     const std::string exec = read_entry_string(file, "Exec");
     const std::string icon = read_entry_string(file, "Icon");
     const bool no_display = file.value("NoDisplay").toBool();

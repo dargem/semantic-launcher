@@ -95,7 +95,7 @@ Q_INVOKABLE void SearchEngine::search(const QString& query)
         return;
     }
 
-    auto results = m_database.get_best(query.toStdString(), 50);
+    auto results = m_database.get_best(query.toStdString(), 7);
 
     m_model.set_results(QList<Result>(results.begin(), results.end()));
 }
