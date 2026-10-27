@@ -36,6 +36,7 @@ std::vector<Result> Database::get_best(std::string_view query, size_t n) const
     {
         File m_file;
         double m_weighted_score{0.0};
+        double m_matched_weight{0.0};
     };
 
     std::unordered_map<std::string, Candidate> candidates;
@@ -56,6 +57,7 @@ std::vector<Result> Database::get_best(std::string_view query, size_t n) const
 
             auto [it, inserted] = candidates.try_emplace(key, Candidate{result.m_file, 0.0});
             it->second.m_weighted_score += weighted_score;
+            it->second.m_matched_weight += weighted_ranker.m_weight;
         }
     }
 
@@ -66,7 +68,8 @@ std::vector<Result> Database::get_best(std::string_view query, size_t n) const
 
     for (auto& [_, candidate] : candidates)
     {
-        const double normalized_score = candidate.m_weighted_score / total_weight;
+        if (candidate.m_matched_weight <= 0.0) { continue; }
+        const double normalized_score = candidate.m_weighted_score / candidate.m_matched_weight;
         if (normalized_score <= 0.0) { continue; }
 
         ranked_results.emplace_back(std::move(candidate.m_file), normalized_score);
